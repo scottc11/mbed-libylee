@@ -1,7 +1,9 @@
 #ifndef __MIDI_H
 #define __MIDI_H
 
-#include "main.h"
+#include <mbed.h>
+
+#define MIDI_BAUD 31250
 
 const int MIDI_MAP[128] = { 
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
@@ -16,7 +18,7 @@ class MIDI {
     RawSerial serial;
 
   public:
-    MIDI() : serial(MIDI_TX, MIDI_RX, MIDI_BAUD) {}
+    MIDI(PinName tx, PinName rx) : serial(tx, rx, MIDI_BAUD) {}
     
     void sendNoteOn(uint8_t channel, uint8_t note, uint8_t velocity);
     void sendNoteOff(uint8_t channel, uint8_t note, uint8_t velocity);

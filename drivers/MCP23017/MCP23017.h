@@ -2,8 +2,7 @@
 #ifndef _MCP23017_H_
 #define _MCP23017_H_
 
-#include "mbed.h"
-#include "main.h"
+#include <mbed.h>
 
 #define MCP23017_DEFAULT_ADDR 0x40
 #define MCP23017_PORTA 0x00

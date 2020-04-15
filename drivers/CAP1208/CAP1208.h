@@ -1,7 +1,7 @@
 #ifndef __CAP1208_H
 #define __CAP1208_H
 
-#include "main.h"
+#include <mbed.h>
 #include "TCA9544A.h"
 
 #define CAP1208_I2C_ADDR     0x50
@@ -54,7 +54,7 @@ private:
     char buffer[2];
     buffer[0] = reg;
     buffer[1] = data;
-    i2c->write(CAP1208_ADDR, buffer, 2);
+    i2c->write(CAP1208_I2C_ADDR, buffer, 2);
   }
 
   char i2cRead(char reg) {

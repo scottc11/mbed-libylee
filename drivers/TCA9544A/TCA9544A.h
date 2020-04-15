@@ -1,7 +1,6 @@
 #ifndef __TCA9544A_H
 #define __TCA9544A_H
 
-#include "main.h"
 
 #define TCA9544_DEFAULT_ADDR     0x70 // 1110000
 // CHANNEL VALUES
@@ -10,6 +9,7 @@
 #define TCA9544A_CH2 0b00000110
 #define TCA9544A_CH3 0b00000111
 
+#include <mbed.h>
 
 class TCA9544A {
   public:

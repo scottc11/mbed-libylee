@@ -17,7 +17,7 @@
 #ifndef MCP4922_H
 #define MCP4922_H
 
-#include "mbed.h"
+#include <mbed.h>
 
 /** MCP4922 class.
  *  Used for controlling an MCP4922 DAC connected via SPI.
