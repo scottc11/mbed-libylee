@@ -10,10 +10,10 @@
 
 #include <mbed.h>
 
-#define DAC8554_BUFFER_WRITE  0x00
-#define DAC8554_SINGLE_WRITE  0x10
-#define DAC8554_ALL_WRITE     0x20
-#define DAC8554_BROADCAST     0x30
+#define DAC8554_BUFFER_WRITE  0b00000000
+#define DAC8554_SINGLE_WRITE  0b00010000
+#define DAC8554_ALL_WRITE     0b00100000
+#define DAC8554_BROADCAST     0b00110000
 
 class DAC8554 {
 
@@ -33,9 +33,11 @@ public:
   
   DigitalOut select;
   SPI *spi;
-  void init();
+  void init() {
+    spi->format(8, 1);
+  };
   void write(DAC8554::Channels chan, uint16_t value, uint8_t mode = DAC8554_SINGLE_WRITE) {
-    uint8_t config = mode |= (chan << 1);
+    uint8_t config = mode | (chan << 1);
     this->writeRegister(config, value);
   };
 
