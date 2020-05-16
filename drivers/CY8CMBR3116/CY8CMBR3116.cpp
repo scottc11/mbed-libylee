@@ -8,6 +8,5 @@ void CY8CMBR3116::init() {
     deviceId = this->readRegister16(DEVICE_ID);
     connected = deviceId == 2565 ? true : false;
   }
-
   
 }

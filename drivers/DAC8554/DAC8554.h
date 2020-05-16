@@ -33,9 +33,14 @@ public:
   
   DigitalOut select;
   SPI *spi;
+  int baseline = 485;
+  int ceiling = 64741;
+  
   void init() {
     spi->format(8, 1);
   };
+  
+  // 485 and 64741
   void write(DAC8554::Channels chan, uint16_t value, uint8_t mode = DAC8554_SINGLE_WRITE) {
     uint8_t config = mode | (chan << 1);
     this->writeRegister(config, value);
@@ -45,7 +50,9 @@ private:
   
   // 8 MSBs are used as control bits and the 16 LSBs are used as data
   // the DAC8554 requires its data with the MSB as the first bit received
-  // | A1 | A0 | LD1 | LD0 | X | DAC Select 1 | DAC Select 0 | PD0 | D15 | D14 | D13 | D12 | D11 | D10 | D9 | D8 | D7 | D6 | D5 | D4 | D3 | D2 | D1 | D0 |
+  // byte1 --> | A1 | A0 | LD1 | LD0 | X | DAC Select 1 | DAC Select 0 | PD0 |
+  // byte2 --> | D15 | D14 | D13 | D12 | D11 | D10 | D9 | D8 |
+  // byte3 --> | D7  | D6  | D5  | D4  | D3  | D2  | D1 | D0 |
   void writeRegister(uint8_t config, uint16_t data) {
     
     uint8_t byte1 = config;
