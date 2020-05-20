@@ -9,10 +9,11 @@ void TLC59116::initialize() {
   writeRegister(GRPPWM, 0x00);
   writeRegister(GRPFREQ, 0x00);
 
-  writeRegister(LEDOUT0, 0b11111111);
-  writeRegister(LEDOUT1, 0b11111111);
-  writeRegister(LEDOUT2, 0b11111111);
-  writeRegister(LEDOUT3, 0b11111111);
+  // all LEDs to be off on initialization
+  writeRegister(LEDOUT0, 0x00);
+  writeRegister(LEDOUT1, 0x00);
+  writeRegister(LEDOUT2, 0x00);
+  writeRegister(LEDOUT3, 0x00);
 
   writeRegister(PWM0, 0x00);
   writeRegister(PWM1, 0x00);
