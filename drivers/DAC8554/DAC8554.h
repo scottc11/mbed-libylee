@@ -26,18 +26,17 @@ public:
     CHAN_D = 0x3,
   };
   
-  DAC8554(SPI *_spi, PinName selectPin) : select(selectPin) {
-    spi = _spi;
+  DAC8554(PinName spiMosi, PinName spiSck, PinName selectPin) : spi(spiMosi, NC, spiSck), select(selectPin) {
     select.write(0);
   }
   
   DigitalOut select;
-  SPI *spi;
+  SPI spi;
   int baseline = 485;
   int ceiling = 64741;
   
   void init() {
-    spi->format(8, 1);
+    spi.format(8, 1);  // texas instruments requires special serial formatting
   };
   
   // 485 and 64741
@@ -59,9 +58,9 @@ private:
     uint8_t byte2 = (data >> 8) & 0xFF;
     uint8_t byte3 = data & 0xFF;
     select.write(0);
-    spi->write(byte1);
-    spi->write(byte2);
-    spi->write(byte3);
+    spi.write(byte1);
+    spi.write(byte2);
+    spi.write(byte3);
     select.write(1);
   }
   
