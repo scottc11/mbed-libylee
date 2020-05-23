@@ -72,6 +72,7 @@ private:
   enum Registers {
     MAIN_CTRL_REG = 0x00,
     GENERAL_STATUS_REG = 0x02,     // read general status of CAP1208
+    SENSITIVITY = 0x1F,            // The Sensitivity Control register controls the sensitivity of a touch detection
     INPUT_STATUS_REG = 0x03,
     PRODUCT_ID_REG = 0xFD,
     AVR_SMPL_CONF_REG = 0x24,      // default: 0b00111001

@@ -11,6 +11,7 @@ void CAP1208::init() {
   }
 
   i2cWrite(AVR_SMPL_CONF_REG, 0x00);        // speed up sampling time
+  i2cWrite(SENSITIVITY, 0xF);               // delta sense @ 128
   i2cWrite(MULT_TOUCH_CONF_REG, 0x00);      // allow multiple touches
   i2cWrite(INT_ENABLE_REG, 0xFF);           // enable interupts
   i2cWrite(REPEAT_RATE_ENABLE_REG, 0x00);   // disable repeat rate for all channels
