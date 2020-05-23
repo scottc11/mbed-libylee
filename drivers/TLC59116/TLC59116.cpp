@@ -14,82 +14,88 @@ void TLC59116::initialize() {
   writeRegister(LEDOUT1, 0x00);
   writeRegister(LEDOUT2, 0x00);
   writeRegister(LEDOUT3, 0x00);
-
-  writeRegister(PWM0, 0x00);
-  writeRegister(PWM1, 0x00);
-  writeRegister(PWM2, 0x00);
-  writeRegister(PWM3, 0x00);
-  writeRegister(PWM4, 0x00);
-  writeRegister(PWM5, 0x00);
-  writeRegister(PWM6, 0x00);
-  writeRegister(PWM7, 0x00);
-
 }
 
 void TLC59116::setLedOutput(int led, LedState state, int pwm /*=0*/) {
   
   switch (led) {
     case 0:
+      led0States &= 0xFC;
       led0States |= state;
       writeRegister(LEDOUT0, led0States);
       break;
     case 1:
+      led0States &= 0xF3;
       led0States |= (state << 2);
       writeRegister(LEDOUT0, led0States);
       break;
     case 2:
+      led0States &= 0xCF;
       led0States |= (state << 4);
       writeRegister(LEDOUT0, led0States);
       break;
     case 3:
+      led0States &= 0x3F;
       led0States |= (state << 6);
       writeRegister(LEDOUT0, led0States);
       break;
     case 4:
+      led1States &= 0xFC;
       led1States |= state;
       writeRegister(LEDOUT1, led1States);
       break;
     case 5:
+      led1States &= 0xF3;
       led1States |= (state << 2);
       writeRegister(LEDOUT1, led1States);
       break;
     case 6:
+      led1States &= 0xCF;
       led1States |= (state << 4);
       writeRegister(LEDOUT1, led1States);
       break;
     case 7:
+      led1States &= 0x3F;
       led1States |= (state << 6);
       writeRegister(LEDOUT1, led1States);
       break;
     case 8:
+      led2States &= 0xFC;
       led2States |= state;
       writeRegister(LEDOUT2, led2States);
       break;
     case 9:
+      led2States &= 0xF3;
       led2States |= (state << 2);
       writeRegister(LEDOUT2, led2States);
       break;
     case 10:
+      led2States &= 0xCF;
       led2States |= (state << 4);
       writeRegister(LEDOUT2, led2States);
       break;
     case 11:
+      led2States &= 0x3F;
       led2States |= (state << 6);
       writeRegister(LEDOUT2, led2States);
       break;
     case 12:
+      led3States &= 0xFC;
       led3States |= state;
       writeRegister(LEDOUT3, led3States);
       break;
     case 13:
+      led3States &= 0xF3;
       led3States |= (state << 2);
       writeRegister(LEDOUT3, led3States);
       break;
     case 14:
+      led3States &= 0xCF;
       led3States |= (state << 4);
       writeRegister(LEDOUT3, led3States);
       break;
     case 15:
+      led3States &= 0x3F;
       led3States |= (state << 6);
       writeRegister(LEDOUT3, led3States);
       break;
@@ -101,6 +107,25 @@ void TLC59116::setLedOutput(int led, LedState state, int pwm /*=0*/) {
     setLedPWM(led, pwm);
   }
 }
+
+
+/**
+ * sets all 16 pins to ON or OFF, based on a 16 bit integer
+ * ex. 1111 1111 1111 1111 == 65535 == all LEDs ON
+*/
+void TLC59116::setLedOutput16(uint16_t value) {
+
+}
+
+
+/**
+ * write a function which will get called after (or before) every I2C transfer to determine how many LEDs
+ * are going to be turned on, and have it determing the appropriate voltage gain to power those leds.
+ * Class initialization will take an additional argument informing the "max power" usage to be used. This
+ * value will be used as a "ceiling"
+ * 
+ * basically the more LEDs lit, the dimmer they become.
+*/ 
 
 /**
  * A 97-kHz fixed frequency signal is used for each output.

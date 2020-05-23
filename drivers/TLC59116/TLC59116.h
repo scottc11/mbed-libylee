@@ -1,5 +1,8 @@
+#ifndef __TLC59116_H
+#define __TLC59116_H
 
 #include "mbed.h"
+#include "BitwiseMethods.h"
 
 #define TLC59116_DEFAULT_ADDR   1100000
 #define TLC59116_ALL_CALL       1101000
@@ -31,6 +34,7 @@ public:
   void setMode(int mode1Value, int mode2Value);
   void setVoltageGain(int gain);
   void setLedOutput(int led, LedState state, int pwm=0);
+  void setLedOutput16(uint16_t value);
   void setBiColorLedOutput(int pins, int state);
   void setLedPWM(int led, int value);
   void setGroupPWM(int value);
@@ -93,3 +97,4 @@ private:
 };
 
 
+#endif
