@@ -24,6 +24,12 @@ int bitClear(int value, int bit) {
   return (value &= ~(1UL << bit));
 }
 
+// clears all bits given a byte, 0 means don't clear that bit, 1 means clear that bit
+// ex. byte == 0b00001100 will cleat bits 2 and 3
+int bitClearMany(int value, int byte) {
+  return value &= ~byte;
+}
+
 int bitWrite(int byte, int bit, int value) {
   return (value ? bitSet(byte, bit) : bitClear(byte, bit));
 }
