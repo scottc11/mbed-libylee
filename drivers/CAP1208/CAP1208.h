@@ -31,6 +31,8 @@ class CAP1208 {
   bool connected;
   char data_read[1];
   char data_write[2];
+  uint8_t currTouched;  // not yet implemented
+  uint8_t prevTouched;  // not yet implemented
 
   void init();
   void disableInterupts();
