@@ -2,7 +2,7 @@
 #define __CAP1208_H
 
 #include <mbed.h>
-#include "TCA9544A.h"
+#include "TCA9548A.h"
 
 #define CAP1208_I2C_ADDR     0x50
 #define CAP1208_PROD_ID      0x6B
@@ -17,7 +17,7 @@ class CAP1208 {
     i2c = i2c_ptr;
   }
 
-  CAP1208(I2C *i2c_ptr, TCA9544A *mux_ptr, int _muxChannel) {
+  CAP1208(I2C *i2c_ptr, TCA9548A *mux_ptr, TCA9548A::Channel _muxChannel) {
     useMux = true;
     i2c = i2c_ptr;
     mux = mux_ptr;
@@ -25,8 +25,8 @@ class CAP1208 {
   }
 
   I2C * i2c;
-  TCA9544A * mux;
-  int muxChannel;
+  TCA9548A * mux;
+  TCA9548A::Channel muxChannel;
   bool useMux;
   bool connected;
   char data_read[1];
