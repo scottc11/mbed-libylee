@@ -37,3 +37,7 @@ int bitWrite(int byte, int bit, int value) {
 int bitRead(int byte, int bit) {
   return (byte >> bit) & 0x01;
 }
+
+int two8sTo16(int byte1, int byte2) {
+  return (byte2 << 8) | byte1;
+}
