@@ -9,19 +9,15 @@ void TLC59116::initialize() {
   writeRegister(GRPPWM, 0x00);
   writeRegister(GRPFREQ, 0x00);
 
-  // all LEDs to be off on initialization
-  writeRegister(LEDOUT0, 0x00);
-  writeRegister(LEDOUT1, 0x00);
-  writeRegister(LEDOUT2, 0x00);
-  writeRegister(LEDOUT3, 0x00);
+  setAllOutputsOff();
 }
 
 void TLC59116::setLedOutput(int led, LedState state, int pwm /*=0*/) {
   
   switch (led) {
     case 0:
-      led0States &= 0xFC;
-      led0States |= state;
+      led0States &= 0xFC; // set bits 0 and 1 to 0/LOW
+      led0States |= state; // apply desired LED output state (ON, OFF, PWM, GROUP)
       writeRegister(LEDOUT0, led0States);
       break;
     case 1:
@@ -114,7 +110,6 @@ void TLC59116::setLedOutput(int led, LedState state, int pwm /*=0*/) {
  * ex. 1111 1111 1111 1111 == 65535 == all LEDs ON
 */
 void TLC59116::setLedOutput16(uint16_t value) {
-
 }
 
 
@@ -171,4 +166,15 @@ void TLC59116::setMode(int mode1Value, int mode2Value) {
 */
 void TLC59116::setVoltageGain(int gain) {
   writeRegister(IREF, 0xC0); // set voltage gain to 0.5 (default: 0.992)
+}
+
+void TLC59116::setAllOutputsOff() {
+  led0States = 0x00;
+  led1States = 0x00;
+  led2States = 0x00;
+  led3States = 0x00;
+  writeRegister(LEDOUT0, 0x00);
+  writeRegister(LEDOUT1, 0x00);
+  writeRegister(LEDOUT2, 0x00);
+  writeRegister(LEDOUT3, 0x00);
 }

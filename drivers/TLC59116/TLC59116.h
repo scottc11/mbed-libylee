@@ -38,6 +38,7 @@ public:
   void setBiColorLedOutput(int pins, int state);
   void setLedPWM(int led, int value);
   void setGroupPWM(int value);
+  void setAllOutputsOff();
 
 private:
     
