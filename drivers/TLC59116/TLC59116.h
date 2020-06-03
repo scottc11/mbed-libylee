@@ -31,6 +31,8 @@ public:
   uint8_t led3States;
 
   void initialize();
+  void enableDimmingMode();
+  void enableBlinkingMode();
   void setMode(int mode1Value, int mode2Value);
   void setVoltageGain(int gain);
   void setLedOutput(int led, LedState state, int pwm=0);
@@ -38,6 +40,7 @@ public:
   void setBiColorLedOutput(int pins, int state);
   void setLedPWM(int led, int value);
   void setGroupPWM(int value);
+  void setGroupFREQ(int value);
   void setAllOutputsOff();
 
 private:

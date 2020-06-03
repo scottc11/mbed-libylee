@@ -16,82 +16,82 @@ void TLC59116::setLedOutput(int led, LedState state, int pwm /*=0*/) {
   
   switch (led) {
     case 0:
-      led0States &= 0xFC; // set bits 0 and 1 to 0/LOW
+      led0States &= 0b11111100; // set bits 0 and 1 to 0/LOW
       led0States |= state; // apply desired LED output state (ON, OFF, PWM, GROUP)
       writeRegister(LEDOUT0, led0States);
       break;
     case 1:
-      led0States &= 0xF3;
+      led0States &= 0b11110011;
       led0States |= (state << 2);
       writeRegister(LEDOUT0, led0States);
       break;
     case 2:
-      led0States &= 0xCF;
+      led0States &= 0b11001111;
       led0States |= (state << 4);
       writeRegister(LEDOUT0, led0States);
       break;
     case 3:
-      led0States &= 0x3F;
+      led0States &= 0b00111111;
       led0States |= (state << 6);
       writeRegister(LEDOUT0, led0States);
       break;
     case 4:
-      led1States &= 0xFC;
+      led1States &= 0b11111100;
       led1States |= state;
       writeRegister(LEDOUT1, led1States);
       break;
     case 5:
-      led1States &= 0xF3;
+      led1States &= 0b11110011;
       led1States |= (state << 2);
       writeRegister(LEDOUT1, led1States);
       break;
     case 6:
-      led1States &= 0xCF;
+      led1States &= 0b11001111;
       led1States |= (state << 4);
       writeRegister(LEDOUT1, led1States);
       break;
     case 7:
-      led1States &= 0x3F;
+      led1States &= 0b00111111;
       led1States |= (state << 6);
       writeRegister(LEDOUT1, led1States);
       break;
     case 8:
-      led2States &= 0xFC;
+      led2States &= 0b11111100;
       led2States |= state;
       writeRegister(LEDOUT2, led2States);
       break;
     case 9:
-      led2States &= 0xF3;
+      led2States &= 0b11110011;
       led2States |= (state << 2);
       writeRegister(LEDOUT2, led2States);
       break;
     case 10:
-      led2States &= 0xCF;
+      led2States &= 0b11001111;
       led2States |= (state << 4);
       writeRegister(LEDOUT2, led2States);
       break;
     case 11:
-      led2States &= 0x3F;
+      led2States &= 0b00111111;
       led2States |= (state << 6);
       writeRegister(LEDOUT2, led2States);
       break;
     case 12:
-      led3States &= 0xFC;
+      led3States &= 0b11111100;
       led3States |= state;
       writeRegister(LEDOUT3, led3States);
       break;
     case 13:
-      led3States &= 0xF3;
+      led3States &= 0b11110011;
       led3States |= (state << 2);
       writeRegister(LEDOUT3, led3States);
       break;
     case 14:
-      led3States &= 0xCF;
+      led3States &= 0b11001111;
       led3States |= (state << 4);
       writeRegister(LEDOUT3, led3States);
       break;
     case 15:
-      led3States &= 0x3F;
+      led3States &= 0b00111111;
       led3States |= (state << 6);
       writeRegister(LEDOUT3, led3States);
       break;
@@ -142,6 +142,19 @@ void TLC59116::setGroupPWM(int value) {
 }
 
 
+/**
+ * Group Frequency Register (GRPFREQ)
+
+ * GRPFREQ is used to program the global blinking period when the DMBLNK bit (MODE2 register) is equal to 1. 
+ * Value in this register is a Don't care when DMBLNK = 0. 
+ * This is applicable to LED output programmed with LDRx = 11 (LEDOUT0, LEDOUT1, LEDOUT2 and LEDOUT3 registers).
+ * The blinking period is controlled through 256 linear steps from 00h (41 ms, frequency 24 Hz) to FFh (10.73 s). 
+ * Global blinking period (seconds) = (GFRQ[7:0] + 1) / 24
+*/ 
+void TLC59116::setGroupFREQ(int value) {
+  writeRegister(GRPFREQ, value);
+}
+
 
 /** Mode Register 1 and 2
  * 
@@ -177,4 +190,16 @@ void TLC59116::setAllOutputsOff() {
   writeRegister(LEDOUT1, 0x00);
   writeRegister(LEDOUT2, 0x00);
   writeRegister(LEDOUT3, 0x00);
+}
+
+void TLC59116::enableDimmingMode() {
+  int config = readRegister(MODE2);
+  config = bitClear(config, 5);
+  writeRegister(MODE2, config);  
+}
+
+void TLC59116::enableBlinkingMode() {
+  int config = readRegister(MODE2);
+  config = bitSet(config, 5);
+  writeRegister(MODE2, config);
 }
