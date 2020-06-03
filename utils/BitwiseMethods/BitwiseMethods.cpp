@@ -16,18 +16,18 @@
  * combine two 8 bit values into 16 bit value --> https://stackoverflow.com/questions/11193918/combine-merge-two-bytes-into-one/11193978
 **/
 
-int bitSet(int value, int bit) {
-  return (value |= (1UL << bit));
+int bitSet(int byte, int bit) {
+  return (byte |= (1UL << bit));
 }
 
-int bitClear(int value, int bit) {
-  return (value &= ~(1UL << bit));
+int bitClear(int byte, int bit) {
+  return (byte &= ~(1UL << bit));
 }
 
 // clears all bits given a byte, 0 means don't clear that bit, 1 means clear that bit
 // ex. byte == 0b00001100 will cleat bits 2 and 3
-int bitClearMany(int value, int byte) {
-  return value &= ~byte;
+int bitClearMany(int byte, int value) {
+  return byte &= ~value;
 }
 
 int bitWrite(int byte, int bit, int value) {
