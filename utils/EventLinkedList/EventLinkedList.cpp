@@ -20,10 +20,6 @@ void EventLinkedList::handleQueuedEvent(int position) {
 }
 
 
-void EventLinkedList::setNumLoopSteps(int num) {
-  numLoopSteps = num;
-}
-
 int EventLinkedList::getListLength() {
   int32_t count = 0;
   EventNode *iteration = head;
