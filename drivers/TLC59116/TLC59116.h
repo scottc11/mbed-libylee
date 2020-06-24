@@ -41,7 +41,8 @@ public:
   void setLedPWM(int led, int value);
   void setGroupPWM(int value);
   void setGroupFREQ(int value);
-  void setAllOutputsOff();
+  void setAllOutputsLow();
+  void setAllOutputsHigh();
 
 private:
     

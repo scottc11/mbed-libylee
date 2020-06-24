@@ -9,7 +9,7 @@ void TLC59116::initialize() {
   writeRegister(GRPPWM, 0x00);
   writeRegister(GRPFREQ, 0x00);
 
-  setAllOutputsOff();
+  setAllOutputsLow();
 }
 
 void TLC59116::setLedOutput(int led, LedState state, int pwm /*=0*/) {
@@ -181,7 +181,7 @@ void TLC59116::setVoltageGain(int gain) {
   writeRegister(IREF, 0xC0); // set voltage gain to 0.5 (default: 0.992)
 }
 
-void TLC59116::setAllOutputsOff() {
+void TLC59116::setAllOutputsLow() {
   led0States = 0x00;
   led1States = 0x00;
   led2States = 0x00;
@@ -190,6 +190,17 @@ void TLC59116::setAllOutputsOff() {
   writeRegister(LEDOUT1, 0x00);
   writeRegister(LEDOUT2, 0x00);
   writeRegister(LEDOUT3, 0x00);
+}
+
+void TLC59116::setAllOutputsHigh() {
+  led0States = 0x11;
+  led1States = 0x11;
+  led2States = 0x11;
+  led3States = 0x11;
+  writeRegister(LEDOUT0, 0x11);
+  writeRegister(LEDOUT1, 0x11);
+  writeRegister(LEDOUT2, 0x11);
+  writeRegister(LEDOUT3, 0x11);
 }
 
 void TLC59116::enableDimmingMode() {
