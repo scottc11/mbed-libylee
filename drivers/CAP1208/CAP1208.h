@@ -2,7 +2,7 @@
 #define __CAP1208_H
 
 #include <mbed.h>
-#include "TCA9544A.h"
+#include "TCA9548A.h"
 
 #define CAP1208_I2C_ADDR     0x50
 #define CAP1208_PROD_ID      0x6B
@@ -17,7 +17,7 @@ class CAP1208 {
     i2c = i2c_ptr;
   }
 
-  CAP1208(I2C *i2c_ptr, TCA9544A *mux_ptr, int _muxChannel) {
+  CAP1208(I2C *i2c_ptr, TCA9548A *mux_ptr, TCA9548A::Channel _muxChannel) {
     useMux = true;
     i2c = i2c_ptr;
     mux = mux_ptr;
@@ -25,12 +25,14 @@ class CAP1208 {
   }
 
   I2C * i2c;
-  TCA9544A * mux;
-  int muxChannel;
+  TCA9548A * mux;
+  TCA9548A::Channel muxChannel;
   bool useMux;
   bool connected;
   char data_read[1];
   char data_write[2];
+  uint8_t currTouched;  // not yet implemented
+  uint8_t prevTouched;  // not yet implemented
 
   void init();
   void disableInterupts();
@@ -72,6 +74,7 @@ private:
   enum Registers {
     MAIN_CTRL_REG = 0x00,
     GENERAL_STATUS_REG = 0x02,     // read general status of CAP1208
+    SENSITIVITY = 0x1F,            // The Sensitivity Control register controls the sensitivity of a touch detection
     INPUT_STATUS_REG = 0x03,
     PRODUCT_ID_REG = 0xFD,
     AVR_SMPL_CONF_REG = 0x24,      // default: 0b00111001

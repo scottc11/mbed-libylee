@@ -1,21 +1,48 @@
+#ifndef __TLC59116_H
+#define __TLC59116_H
 
 #include "mbed.h"
+#include "BitwiseMethods.h"
 
-#define TLC59116_DEFAULT_ADDR   11000000
+#define TLC59116_DEFAULT_ADDR   1100000
 #define TLC59116_ALL_CALL       1101000
 
 class TLC59116 {
 public:
-    
+  
+  enum LedState {
+    OFF = 0,    // LED is off (default power-up state)
+    ON = 1,     // LED is fully on (individual brightness and group dimming/blinking not controlled)
+    PWM = 2,    // LED is individual brightness can be controlled through its PWMx register
+    GROUP = 3,  // LED individual brightness and group dimming/blinking can be controlled through its PWMx register and the GRPPWM registers
+  };
+
   TLC59116(I2C * _i2c, int _address = TLC59116_DEFAULT_ADDR) {
     i2c = _i2c;
-    address = _address;
+    address = _address << 1;
   };
   
   int address;
   I2C *i2c;
-  int buffer;  
+  int buffer;
+  uint8_t led0States;
+  uint8_t led1States;
+  uint8_t led2States;
+  uint8_t led3States;
+
   void initialize();
+  void enableDimmingMode();
+  void enableBlinkingMode();
+  void setMode(int mode1Value, int mode2Value);
+  void setVoltageGain(int gain);
+  void setLedOutput(int led, LedState state, int pwm=0);
+  void setLedOutput16(uint16_t value);
+  void setBiColorLedOutput(int pins, int state);
+  void setLedPWM(int led, int value);
+  void setGroupPWM(int value);
+  void setGroupFREQ(int value);
+  void setAllOutputsLow();
+  void setAllOutputsHigh();
 
 private:
     
@@ -23,9 +50,9 @@ private:
     char buffer[2];
     buffer[0] = reg;
     buffer[1] = data;
-    i2c->start();
+    // i2c->start();
     i2c->write(address, buffer, 2);
-    i2c->stop();
+    // i2c->stop();
   }
 
   char readRegister(char reg) {
@@ -36,6 +63,7 @@ private:
     i2c->read(address, buffer, 1);
     return buffer[0];
   }
+
   enum Registers {
     MODE1 = 0x00, // R/W Mode 1
     MODE2 = 0x01, // R/W Mode 2
@@ -69,6 +97,9 @@ private:
     EFLAG1 = 0x1D, // R Error flags 1
     EFLAG2 = 0x1E, // R Error flags 2
   };
+
+  char pwmRegisters[16] = { PWM0, PWM1, PWM2, PWM3, PWM4, PWM5, PWM6, PWM7, PWM8, PWM9, PWM10, PWM11, PWM12, PWM13, PWM14, PWM15 };
 };
 
 
+#endif
