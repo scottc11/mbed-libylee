@@ -3,22 +3,29 @@
 #define _SX1509_H_
 
 #include <mbed.h>
+#include "BitwiseMethods.h"
 
 #define SX1509_ADDR  0x3E
 
 class SX1509 {
 	
 public:
+  enum Mode
+  {
+    OUTPUT = 0x0,
+    INPUT = 0x1,
+    ANALOG_OUTPUT = 0x2
+  };
 
-	SX1509(I2C *_i2c, char _addr = SX1509_ADDR) {
+  SX1509(I2C *_i2c, char _addr = SX1509_ADDR) {
 		address = _addr << 1;
 		i2c = _i2c;
 	};
 
 	I2C * i2c;
 	char address;
-
-	/** Software Reset
+  char REG_I_ON[16] = { REG_I_ON_0, REG_I_ON_1, REG_I_ON_2, REG_I_ON_3, REG_I_ON_4, REG_I_ON_5, REG_I_ON_6, REG_I_ON_7, REG_I_ON_8, REG_I_ON_9, REG_I_ON_10, REG_I_ON_11, REG_I_ON_12, REG_I_ON_13, REG_I_ON_14, REG_I_ON_15 };
+  /** Software Reset
 	 */
 	void init(void);
 	void config(char _value);
@@ -26,10 +33,12 @@ public:
 	void digitalWrite(char _port, char _value);
 	char digitalRead(char _port);
   void ledWrite(int value);
-  void ledConfig();
+  void ledConfig(int pin);
   void setDirection(int dir);
   void toggleLEDDriver(bool state);
 
+  void pinMode(int pin, Mode mode); // should handle all types of pin modes
+  void ledPWM(int pin, int value);
 private:
 
 	inline void i2cWrite(char _command, char _data1, char _data2){
@@ -58,11 +67,6 @@ private:
 		return commands[0];
 	}
 	
-  enum SX1509_IO {
-    INPUT = 1,
-    OUTPUT = 0
-  };
-
 	// registors
 	enum SX1509_REG {
     // Stolen from SparkFun 🙂 https://github.com/sparkfun/SparkFun_SX1509_Arduino_Library/blob/master/

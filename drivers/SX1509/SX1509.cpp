@@ -2,12 +2,17 @@
 #include "SX1509.h"
 
 void SX1509::init() {
-  // this->i2cWrite();
+  this->i2cWrite(REG_CLOCK, 0b01010000);
+  this->i2cWrite(REG_MISC, 0b01110000); // very important for LED Driver mode that this config gets set
 }
 
-void SX1509::configurePinIO(char _port, int direction) {
-  if (direction == INPUT) {
+void SX1509::pinMode(int pin, Mode mode) {
+  if (mode == INPUT) {
 
+  } else if (mode == OUTPUT) {
+
+  } else if (mode == ANALOG_OUTPUT) {
+    ledConfig(pin);
   }
 }
 
@@ -27,15 +32,38 @@ Below are the steps required to use the LED driver with the typical LED connecti
 
 */
 
-void SX1509::ledConfig() {
-  this->i2cRead(REG_DATA_B);
-  this->i2cWrite(REG_INPUT_DISABLE_B, 0xFF);
-  this->i2cWrite(REG_PULL_UP_B, 0x00);
-  this->i2cWrite(REG_OPEN_DRAIN_B, 0x00);
-  this->setDirection(OUTPUT);
-  this->i2cWrite(REG_CLOCK, 0b01010000);  // internal OSC, OSCIO Pin output, 
-  this->toggleLEDDriver(false);
-  this->i2cWrite(REG_DATA_B, 0x00);
+// Please note that in this configuration the IO must be programmed as open drain output (RegOpenDrain)
+// with no pull-up (RegPullUp) and input buffer must be disabled (RegInputBufferDisable).
+void SX1509::ledConfig(int pin)
+{
+  int temp;
+
+  if (pin < 8)
+  {
+    // bank A
+  }
+  else
+  {
+    // bank B
+    pin = pin - 8;
+    temp = this->i2cRead(REG_INPUT_DISABLE_B);
+    this->i2cWrite(REG_INPUT_DISABLE_B, bitWrite(temp, pin, 1)); // Disable the input buffer (HIGH)
+
+    temp = this->i2cRead(REG_PULL_UP_B);
+    this->i2cWrite(REG_PULL_UP_B, bitWrite(temp, pin, 0)); // remove internal pull-up (LOW)
+
+    temp = this->i2cRead(REG_OPEN_DRAIN_B);
+    this->i2cWrite(REG_OPEN_DRAIN_B, bitWrite(temp, pin, 1)); // set IO to open drain (HIGH)
+
+    temp = this->i2cRead(REG_DIR_B);
+    this->i2cWrite(REG_DIR_B, bitWrite(temp, pin, 1)); // Set IO direction to output (LOW)
+
+    temp = this->i2cRead(REG_LED_DRIVER_ENABLE_B);
+    this->i2cWrite(REG_LED_DRIVER_ENABLE_B, bitWrite(temp, pin, 1));
+
+    temp = this->i2cRead(REG_DATA_B);
+    this->i2cWrite(REG_DATA_B, bitWrite(temp, pin, 0)); // setting data LOW means LED Driver started
+  }
 }
 
 void SX1509::ledWrite(int value) {
@@ -55,15 +83,10 @@ void SX1509::setDirection(int dir) {
   }
 }
 
-void SX1509::toggleLEDDriver(bool state) {
-  if (state) {
-    this->i2cWrite(REG_LED_DRIVER_ENABLE_B, 0xFF); // currently used to turn on/off leds
-  } else {
-    this->i2cWrite(REG_LED_DRIVER_ENABLE_B, 0x00); // currently used to turn on/off leds
-  }
-  
+void SX1509::ledPWM(int pin, int value)
+{
+  this->i2cWrite(REG_I_ON[pin], value); // sets the PWM / brightness
 }
-
 // configure Clock
 
 /**
