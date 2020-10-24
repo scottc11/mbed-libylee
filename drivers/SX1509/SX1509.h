@@ -6,9 +6,11 @@
 #include "BitwiseMethods.h"
 
 #define SX1509_ADDR  0x3E
+// 01 | 0x3F | (0111111)
+// 10 | 0x70 | (1110000)
+// 11 | 0x71 | (1110001)
 
 class SX1509 {
-	
 public:
   enum Mode
   {
@@ -28,17 +30,18 @@ public:
   /** Software Reset
 	 */
 	void init(void);
+  void reset();
 	void config(char _value);
 	void configurePinIO(char _port, int direction); // set port pins to input or output.  1 = input, 0 = output	
 	void digitalWrite(char _port, char _value);
 	char digitalRead(char _port);
-  void ledWrite(int value);
+  void analogWrite(int value);
   void ledConfig(int pin);
   void setDirection(int dir);
   void toggleLEDDriver(bool state);
 
   void pinMode(int pin, Mode mode); // should handle all types of pin modes
-  void ledPWM(int pin, int value);
+  void setPWM(int pin, int value);
 private:
 
 	inline void i2cWrite(char _command, char _data1, char _data2){
@@ -191,7 +194,7 @@ private:
     REG_TEST_1 = 0x7E,	//	RegTest1 Test register 0000 0000
     REG_TEST_2 = 0x7F,	//	RegTest2 Test register 0000 0000
 	};
-	
+
 }; // end of class
 
 #endif
