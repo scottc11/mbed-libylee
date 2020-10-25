@@ -5,12 +5,12 @@ void SX1509::init(bool extClock /*false*/) {
 
   this->reset();
   wait_ms(1);
-  int clockConfig = extClock ? 0b00100000 : 0b01010001;  // use either internal or external clock signal
+  int clockConfig = extClock ? 0b00100000 : 0b01010010;  // use either internal or external clock signal
   //  fOSCOUT = fOSC/(2^(RegClock[3:0]-1))
   //  ClkX = fOSC/(2^(RegMisc[6:4]-1))
   this->i2cWrite(REG_CLOCK, clockConfig);
   int regMiscConfig = (DriverMode::LINEAR | ClockSpeed::EXTRA_SLOW);
-  regMiscConfig = 0b01110100;
+  regMiscConfig |= 0b00000100;
   this->i2cWrite(REG_MISC, regMiscConfig); // very important for LED Driver mode that this config gets set
 }
 
@@ -28,14 +28,57 @@ void SX1509::setDriverMode(bool linear)
   this->i2cWrite(REG_MISC, hotValue);
 };
 
-void SX1509::pinMode(int pin, Mode mode) {
+
+void SX1509::pinMode(int pin, PinMode mode) {
   if (mode == INPUT) {
+    // set RegPullup to 0xF0 (pull-ups enabled on inputs)
+    // Direction register
+    // RegData
+    enablePullup(pin);
+    setDirection(pin, 1);
+    // this->i2cRead()
 
   } else if (mode == OUTPUT) {
-
+    setDirection(pin, 0);
   } else if (mode == ANALOG_OUTPUT) {
     ledConfig(pin);
   }
+}
+
+/**
+ * An interrupt NINT can be generated on any programmed combination of I/Os rising and/or falling edges through the RegInterruptMask and RegSense registers.
+ * If needed, the I/Os which triggered the interrupt can then be identified by reading RegInterruptSource register.
+ * 
+ * We enable interrupt on I/O[1] in RegInterruptMask
+ * We set edge sense for I/O[1] in RegSense
+
+*/
+void SX1509::setInterupt(int pin)
+{
+
+}
+
+/**
+ * value table
+  0: 0.5ms x 2MHz/fOSC
+  1: 1ms x 2MHz/fOSC
+  2: 2ms x 2MHz/fOSC 
+  3: 4ms x 2MHz/fOSC
+  4: 8ms x 2MHz/fOSC
+  5: 16ms x 2MHz/fOSC
+  6: 32ms x 2MHz/fOSC
+  7: 64ms x 2MHz/fOSC
+ 
+ * Each input can be individually debounced by setting corresponding bits in RegDebounce register.
+ * At power up the debounce function is disabled. After enabling the debouncer, the change of the input value 
+ * is accepted only if the input value is identical at two consecutive sampling times.
+ * 
+ * The debounce time common to all IOs can be set in RegDebounceConfig register from 0.5 to 64ms (fOSC = 2MHz).
+ 
+*/
+void SX1509::setInputDebounce(int value)
+{
+  this->i2cWrite(REG_DEBOUNCE_CONFIG, value);
 }
 
 /** Software Reset
@@ -68,32 +111,26 @@ void SX1509::ledConfig(int pin)
 {
   int hotConfig; // the current value of the register
   int reg;       // register to read/write
-  int bank = (pin < 8) ? 1 : 0; // for bank A increment all commands by 1, else don't increment
-  int pinNum = (pin < 8) ? pin : pin - 8;
+  int bank = getBank(pin);
+  int pinNum = getPinPos(pin);
 
   reg = REG_INPUT_DISABLE_B + bank;
   hotConfig = this->i2cRead(reg);
   this->i2cWrite(reg, bitWrite(hotConfig, pinNum, 1)); // Disable the input buffer (HIGH)
 
-  reg = REG_PULL_UP_B + bank;
-  hotConfig = this->i2cRead(reg);
-  this->i2cWrite(reg, bitWrite(hotConfig, pinNum, 0)); // remove internal pull-up (LOW)
+  this->disablePullup(pin); // remove internal pull-up (LOW)
   
   reg = REG_OPEN_DRAIN_B + bank;
   hotConfig = this->i2cRead(reg);
   this->i2cWrite(reg, bitWrite(hotConfig, pinNum, 1)); // set IO to open drain (HIGH)
 
-  reg = REG_DIR_B + bank;
-  hotConfig = this->i2cRead(reg);
-  this->i2cWrite(reg, bitWrite(hotConfig, pinNum, 1)); // Set IO direction to output (LOW)
+  this->setDirection(pin, 0); // Set IO direction to output (LOW)
 
   reg = REG_LED_DRIVER_ENABLE_B + bank;
   hotConfig = this->i2cRead(reg);
   this->i2cWrite(reg, bitWrite(hotConfig, pinNum, 1));
 
-  reg = REG_DATA_B + bank;
-  hotConfig = this->i2cRead(reg);
-  this->i2cWrite(reg, bitWrite(hotConfig, pinNum, 0)); // setting data LOW means LED Driver started
+  this->digitalWrite(pin, 0); // setting data LOW means LED Driver started
 }
 
 void SX1509::analogWrite(int value) {
@@ -105,12 +142,39 @@ void SX1509::analogWrite(int value) {
   }
 }
 
-void SX1509::setDirection(int dir) {
-  if (dir == INPUT) {
-    this->i2cWrite(REG_DIR_B, 0xFF);
-  } else {
-    this->i2cWrite(REG_DIR_B, 0x00);
-  }
+void SX1509::digitalWrite(int pin, int value) {
+  int bank = getBank(pin);
+  int pinPos = getPinPos(pin);
+  int reg = REG_DATA_B + bank;
+  this->i2cWrite(reg, bitWrite(this->i2cRead(reg), pinPos, value));
+}
+
+/**
+ * 0 : IO is configured as an output
+ * 1 : IO is configured as an input
+*/
+void SX1509::setDirection(int pin, int inOut)
+{
+  int bank = getBank(pin);
+  int pinPos = getPinPos(pin);
+  int reg = REG_DIR_B + bank;
+  this->i2cWrite(reg, bitWrite(this->i2cRead(reg), pinPos, inOut));
+}
+
+void SX1509::enablePullup(int pin)
+{
+  int bank = getBank(pin);
+  int pinPos = getPinPos(pin);
+  int reg = REG_PULL_UP_B + bank;
+  this->i2cWrite(reg, bitWrite(this->i2cRead(reg), pinPos, 1));
+}
+
+void SX1509::disablePullup(int pin)
+{
+  int bank = getBank(pin);
+  int pinPos = getPinPos(pin);
+  int reg = REG_PULL_UP_B + bank;
+  this->i2cWrite(reg, bitWrite(this->i2cRead(reg), pinPos, 0));
 }
 
 /** LED PWM

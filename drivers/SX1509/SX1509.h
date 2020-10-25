@@ -12,11 +12,16 @@
 
 class SX1509 {
 public:
-  enum Mode
+  enum PinMode
   {
     OUTPUT = 0x0,
     INPUT = 0x1,
     ANALOG_OUTPUT = 0x2
+  };
+
+  enum Bank {
+    BANK_A = 1,
+    BANK_B = 0
   };
 
   SX1509(I2C *_i2c, char _addr = SX1509_ADDR) {
@@ -33,16 +38,24 @@ public:
 	 */
   void init(bool extClock=false);
   void reset();
-	void digitalWrite(char _port, char _value);
-	char digitalRead(char _port);
+	void digitalWrite(int pin, int value);
+	int digitalRead(int pin);
   void analogWrite(int value);
   void ledConfig(int pin);
-  void setDirection(int dir);
+  void setDirection(int pin, int inOut);
 
-  void pinMode(int pin, Mode mode); // should handle all types of pin modes
+  void pinMode(int pin, PinMode mode); // should handle all types of pin modes
   void setPWM(int pin, int value);
   void setBlink(int pin, uint8_t onTime, uint8_t offTime, uint8_t onIntensity, uint8_t offIntensity);
   void setDriverMode(bool linear);
+  void setInputDebounce(int value);
+  void setInterupt(int pin);
+  void enablePullup(int pin);
+  void disablePullup(int pin);
+
+  int getBank(int pin) { return (pin < 8) ? 1 : 0; };        // for bank A increment all commands by 1, else don't increment
+  int getPinPos(int pin) { return (pin < 8) ? pin : pin - 8; }; // pin bit position
+
 private:
 
 	inline void i2cWrite(char _command, char _data1, char _data2){
