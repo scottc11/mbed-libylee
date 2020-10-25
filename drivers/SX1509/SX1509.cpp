@@ -14,35 +14,34 @@ void SX1509::init(bool extClock /*false*/) {
   this->i2cWrite(REG_MISC, regMiscConfig); // very important for LED Driver mode that this config gets set
 }
 
+
+void SX1509::pinMode(int pin, PinMode mode, bool invertPolarity /*false*/) {
+  switch (mode)
+  {
+    case INPUT:
+      setDirection(pin, 1);
+      enablePullup(pin);
+      if (invertPolarity) { setPolarity(pin, invertPolarity); }
+      break;
+    case OUTPUT:
+      setDirection(pin, 0);
+      break;
+    case ANALOG_OUTPUT:
+      ledConfig(pin);
+      break;
+  }
+}
+
 /**
- * implementation not fully complete. 
- */ 
-void SX1509::setDriverMode(bool linear)
-{
-  int hotValue = this->i2cRead(REG_MISC);
-  if (linear) {
-    hotValue = bitClear(hotValue, 7);
-  } else {
-    hotValue = bitSet(hotValue, 7);
-  }
-  this->i2cWrite(REG_MISC, hotValue);
-};
-
-
-void SX1509::pinMode(int pin, PinMode mode) {
-  if (mode == INPUT) {
-    // set RegPullup to 0xF0 (pull-ups enabled on inputs)
-    // Direction register
-    // RegData
-    enablePullup(pin);
-    setDirection(pin, 1);
-    // this->i2cRead()
-
-  } else if (mode == OUTPUT) {
-    setDirection(pin, 0);
-  } else if (mode == ANALOG_OUTPUT) {
-    ledConfig(pin);
-  }
+ * Enables polarity inversion for each IO
+ * 0 : Normal polarity
+ * 1 : Inverted polarity
+ */
+void SX1509::setPolarity(int pin, int polarity) {
+  int bank = getBank(pin);
+  int pinPos = getPinPos(pin);
+  int reg = REG_POLARITY_B + bank;
+  this->i2cWrite(reg, bitWrite(this->i2cRead(reg), pinPos, polarity));
 }
 
 /**
@@ -149,6 +148,15 @@ void SX1509::digitalWrite(int pin, int value) {
   this->i2cWrite(reg, bitWrite(this->i2cRead(reg), pinPos, value));
 }
 
+int SX1509::digitalRead(int pin)
+{
+  int bank = getBank(pin);
+  int pinPos = getPinPos(pin);
+  int reg = REG_DATA_B + bank;
+  int data = this->i2cRead(reg);
+  return bitRead(data, pinPos);
+}
+
 /**
  * 0 : IO is configured as an output
  * 1 : IO is configured as an input
@@ -212,6 +220,21 @@ void SX1509::setBlink(int pin, uint8_t onTime, uint8_t offTime, uint8_t onIntens
   offValue |= (offIntensity & 0x07);      // offIntensity is a 3 bit number, from bit 2:0
   this->i2cWrite(REG_OFF[pin], offValue);
 }
+
+/**
+ * implementation not fully complete. 
+ */
+void SX1509::setDriverMode(bool linear)
+{
+  int hotValue = this->i2cRead(REG_MISC);
+  if (linear) {
+    hotValue = bitClear(hotValue, 7);
+  }
+  else {
+    hotValue = bitSet(hotValue, 7);
+  }
+  this->i2cWrite(REG_MISC, hotValue);
+};
 
 // configure Clock
 

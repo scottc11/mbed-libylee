@@ -43,8 +43,8 @@ public:
   void analogWrite(int value);
   void ledConfig(int pin);
   void setDirection(int pin, int inOut);
-
-  void pinMode(int pin, PinMode mode); // should handle all types of pin modes
+  void setPolarity(int pin, int polarity);
+  void pinMode(int pin, PinMode mode, bool invertPolarity = false); // should handle all types of pin modes
   void setPWM(int pin, int value);
   void setBlink(int pin, uint8_t onTime, uint8_t offTime, uint8_t onIntensity, uint8_t offIntensity);
   void setDriverMode(bool linear);
