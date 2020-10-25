@@ -24,6 +24,14 @@ public:
     BANK_B = 0
   };
 
+  enum IntType
+  {
+    NONE = 0,
+    RISING = 1,
+    FALLING = 2,
+    BOTH = 3,
+  };
+
   SX1509(I2C *_i2c, char _addr = SX1509_ADDR) {
 		address = _addr << 1;
 		i2c = _i2c;
@@ -49,9 +57,11 @@ public:
   void setBlink(int pin, uint8_t onTime, uint8_t offTime, uint8_t onIntensity, uint8_t offIntensity);
   void setDriverMode(bool linear);
   void setInputDebounce(int value);
-  void setInterupt(int pin);
+  void setInterupt(int pin, bool willNotInterupt, IntType sense);
   void enablePullup(int pin);
   void disablePullup(int pin);
+  void enableInterupt(int pin, IntType type);
+  void disableInterupt(int pin);
 
   int getBank(int pin) { return (pin < 8) ? 1 : 0; };        // for bank A increment all commands by 1, else don't increment
   int getPinPos(int pin) { return (pin < 8) ? pin : pin - 8; }; // pin bit position

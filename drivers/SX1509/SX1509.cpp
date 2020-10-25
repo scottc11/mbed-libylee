@@ -48,13 +48,72 @@ void SX1509::setPolarity(int pin, int polarity) {
  * An interrupt NINT can be generated on any programmed combination of I/Os rising and/or falling edges through the RegInterruptMask and RegSense registers.
  * If needed, the I/Os which triggered the interrupt can then be identified by reading RegInterruptSource register.
  * 
+ * 0 : An event on this IO will trigger an interrupt
+ * 1 : An event on this IO will NOT trigger an interrupt
+ * 
  * We enable interrupt on I/O[1] in RegInterruptMask
  * We set edge sense for I/O[1] in RegSense
-
+ * 
+ * 00 : None
+ * 01 : Rising
+ * 10 : Falling
+ * 11 : Both
 */
-void SX1509::setInterupt(int pin)
-{
 
+void SX1509::setInterupt(int pin, bool willNotInterupt, IntType type)
+{
+  int hotValue;
+  int mask;
+  int bank = getBank(pin);
+  int pinPos = getPinPos(pin);
+  int reg = REG_INTERRUPT_MASK_B + bank;
+  this->i2cWrite(reg, bitWrite(this->i2cRead(reg), pinPos, willNotInterupt));
+
+  // Set Sense
+  if (pin > 7) {              // Bank B IOs
+    if (pinPos > 3) {         // Bank B pins 4:7
+      reg = REG_SENSE_HIGH_B;
+      hotValue = this->i2cRead(reg);
+      mask = 0b00000011 << (pinPos - 4) * 2; // shift by twos
+      hotValue &= ~mask;
+      hotValue |= type << (pinPos - 4) * 2;
+      this->i2cWrite(reg, hotValue);
+    } else {                  // Bank B pins 4:7
+      reg = REG_SENSE_LOW_B;
+      hotValue = this->i2cRead(reg);
+      mask = 0b00000011 << pinPos * 2; // shift by twos
+      hotValue &= ~mask;
+      hotValue |= type << pinPos * 2;
+      this->i2cWrite(reg, hotValue);
+    }
+  } else {
+    if (pinPos > 3) { // Bank A pins 4:7
+      reg = REG_SENSE_HIGH_A;
+      hotValue = this->i2cRead(reg);
+      mask = 0b00000011 << (pinPos - 4) * 2; // shift by twos
+      hotValue &= ~mask;
+      hotValue |= type << (pinPos - 4) * 2;
+      this->i2cWrite(reg, hotValue);
+    }
+    else { // Bank A pins 4:7
+      reg = REG_SENSE_LOW_A;
+      hotValue = this->i2cRead(reg);
+      mask = 0b00000011 << pinPos * 2; // shift by twos
+      hotValue &= ~mask;
+      hotValue |= type << pinPos * 2;
+      this->i2cWrite(reg, hotValue);
+    }
+  }
+}
+
+void SX1509::enableInterupt(int pin, IntType type)
+{
+  this->setInterupt(pin, false, type);
+}
+
+void SX1509::disableInterupt(int pin)
+{
+  this->setInterupt(pin, true, IntType::NONE);
 }
 
 /**
