@@ -12,6 +12,8 @@ void SX1509::init(bool extClock /*false*/) {
   int regMiscConfig = (DriverMode::LINEAR | ClockSpeed::EXTRA_SLOW);
   regMiscConfig |= 0b00000100;
   this->i2cWrite(REG_MISC, regMiscConfig); // very important for LED Driver mode that this config gets set
+
+  this->setDebounceTime(3); // configure a common debounce time
 }
 
 
@@ -21,6 +23,7 @@ void SX1509::pinMode(int pin, PinMode mode, bool invertPolarity /*false*/) {
     case INPUT:
       setDirection(pin, 1);
       enablePullup(pin);
+      setInputDebounce(pin, true);
       if (invertPolarity) { setPolarity(pin, invertPolarity); }
       break;
     case OUTPUT:
@@ -116,8 +119,24 @@ void SX1509::disableInterupt(int pin)
   this->setInterupt(pin, true, IntType::NONE);
 }
 
+/** 
+ * Each input can be individually debounced by setting corresponding bits in RegDebounce register.
+ * At power up the debounce function is disabled. After enabling the debouncer, the change of the input value 
+ * is accepted only if the input value is identical at two consecutive sampling times.
+*/
+void SX1509::setInputDebounce(int pin, bool debounce)
+{
+  int bank = getBank(pin);
+  int pinPos = getPinPos(pin);
+  int reg = REG_DEBOUNCE_ENABLE_B + bank;
+  int hotValue = this->i2cRead(reg);
+  this->i2cWrite(reg, bitWrite(hotValue, pinPos, debounce));
+  hotValue = this->i2cRead(reg);
+}
+
 /**
- * value table
+ * The debounce time common to all IOs can be set in RegDebounceConfig register from 0.5 to 64ms (fOSC = 2MHz).
+
   0: 0.5ms x 2MHz/fOSC
   1: 1ms x 2MHz/fOSC
   2: 2ms x 2MHz/fOSC 
@@ -126,16 +145,8 @@ void SX1509::disableInterupt(int pin)
   5: 16ms x 2MHz/fOSC
   6: 32ms x 2MHz/fOSC
   7: 64ms x 2MHz/fOSC
- 
- * Each input can be individually debounced by setting corresponding bits in RegDebounce register.
- * At power up the debounce function is disabled. After enabling the debouncer, the change of the input value 
- * is accepted only if the input value is identical at two consecutive sampling times.
- * 
- * The debounce time common to all IOs can be set in RegDebounceConfig register from 0.5 to 64ms (fOSC = 2MHz).
- 
 */
-void SX1509::setInputDebounce(int value)
-{
+void SX1509::setDebounceTime(int value) {
   this->i2cWrite(REG_DEBOUNCE_CONFIG, value);
 }
 

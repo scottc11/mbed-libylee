@@ -56,8 +56,10 @@ public:
   void setPWM(int pin, int value);
   void setBlink(int pin, uint8_t onTime, uint8_t offTime, uint8_t onIntensity, uint8_t offIntensity);
   void setDriverMode(bool linear);
-  void setInputDebounce(int value);
+  void setInputDebounce(int pin, bool debounce);
+  void setDebounceTime(int value);
   void setInterupt(int pin, bool willNotInterupt, IntType sense);
+  
   void enablePullup(int pin);
   void disablePullup(int pin);
   void enableInterupt(int pin, IntType type);
