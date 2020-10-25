@@ -1,13 +1,32 @@
 
 #include "SX1509.h"
 
-void SX1509::init() {
+void SX1509::init(bool extClock /*false*/) {
 
   this->reset();
-
-  this->i2cWrite(REG_CLOCK, 0b01010000);
-  this->i2cWrite(REG_MISC, 0b01110000); // very important for LED Driver mode that this config gets set
+  wait_ms(1);
+  int clockConfig = extClock ? 0b00100000 : 0b01010001;  // use either internal or external clock signal
+  //  fOSCOUT = fOSC/(2^(RegClock[3:0]-1))
+  //  ClkX = fOSC/(2^(RegMisc[6:4]-1))
+  this->i2cWrite(REG_CLOCK, clockConfig);
+  int regMiscConfig = (DriverMode::LINEAR | ClockSpeed::EXTRA_SLOW);
+  regMiscConfig = 0b01110100;
+  this->i2cWrite(REG_MISC, regMiscConfig); // very important for LED Driver mode that this config gets set
 }
+
+/**
+ * implementation not fully complete. 
+ */ 
+void SX1509::setDriverMode(bool linear)
+{
+  int hotValue = this->i2cRead(REG_MISC);
+  if (linear) {
+    hotValue = bitClear(hotValue, 7);
+  } else {
+    hotValue = bitSet(hotValue, 7);
+  }
+  this->i2cWrite(REG_MISC, hotValue);
+};
 
 void SX1509::pinMode(int pin, Mode mode) {
   if (mode == INPUT) {
@@ -19,14 +38,15 @@ void SX1509::pinMode(int pin, Mode mode) {
   }
 }
 
-// software reset
+/** Software Reset
+ * Writing consecutively 0x12 and 0x34 to RegReset register will reset all registers to their default values.
+*/
 void SX1509::reset() {
   this->i2cWrite(REG_RESET, 0x12);
   this->i2cWrite(REG_RESET, 0x34);
 }
 
-/** 
- * LED Driver Configuration
+/** LED Driver Configuration
 
 Please note that in this configuration the IO must be programmed as open drain output (RegOpenDrain)
 with no pull-up (RegPullUp) and input buffer must be disabled (RegInputBufferDisable).
@@ -93,11 +113,41 @@ void SX1509::setDirection(int dir) {
   }
 }
 
+/** LED PWM
+ * ON Intensity of IO[X]
+ * 
+ * Linear mode : IOnX = RegIOnX
+ * Logarithmic mode (fading capable IOs only) : IOnX = f(RegIOnX)
+*/
 void SX1509::setPWM(int pin, int value)
 {
   this->i2cWrite(REG_I_ON[pin], value); // sets the PWM / brightness
 }
 
+/** LED Driver Blink Mode
+ * 
+ * Invoked when TOnX != 0 and TOffX != 0. (they both default to 0x00)
+ * If the I/O doesn’t support fading the LED intensity will step directly to the IOnX/IOffX value.
+ * When RegData(X) is cleared, the LED will complete any current ramp, and then stay at minimum intensity
+
+TOnX:
+0 : Infinite (Static mode, TOn directly controlled by RegData, Cf §4.8.2)
+1 - 15 : TOnX = 64 * RegTOnX * (255/ClkX)
+16 - 31 : TOnX = 512 * RegTOnX * (255/ClkX)
+
+ToffX:
+
+
+*/
+void SX1509::setBlink(int pin, uint8_t onTime, uint8_t offTime, uint8_t onIntensity, uint8_t offIntensity)
+{
+  this->i2cWrite(REG_T_ON[pin], (onTime > 31) ? 31 : onTime);
+  this->setPWM(pin, onIntensity);
+  
+  uint8_t offValue = offTime << 3; // offTime is 5 bits, from bit 7:3
+  offValue |= (offIntensity & 0x07);      // offIntensity is a 3 bit number, from bit 2:0
+  this->i2cWrite(REG_OFF[pin], offValue);
+}
 
 // configure Clock
 
