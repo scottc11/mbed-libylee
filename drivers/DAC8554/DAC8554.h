@@ -25,15 +25,15 @@ public:
     CHAN_C = 0x2,
     CHAN_D = 0x3,
   };
-  
-  DAC8554(PinName spiMosi, PinName spiSck, PinName selectPin) : spi(spiMosi, NC, spiSck), select(selectPin) {
-    select.write(0);
-  }
-  
+
   DigitalOut select;
   SPI spi;
   int baseline = 485;
   int ceiling = 64741;
+
+  DAC8554(PinName spiMosi, PinName spiSck, PinName selectPin) : spi(spiMosi, NC, spiSck), select(selectPin) {
+    select.write(1);
+  }
   
   void init() {
     spi.format(8, 1);  // texas instruments requires special serial formatting
