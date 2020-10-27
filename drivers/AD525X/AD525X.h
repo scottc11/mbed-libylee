@@ -23,6 +23,12 @@ public:
         addr = _addr << 1; // now 8-bit address for mbed
     }
 
+    /**
+     * higher the value, lower the resistance
+     * 255 (ie max value) will still give a resistance of about 120 ohms
+     * 236 gives about 186 ohms
+     * increments are aprox 4 ohms
+    */ 
     void setWiper(AD525X::Channels wiper, uint8_t value)
     {
         this->i2cWrite(wiper, value);
