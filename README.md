@@ -8,7 +8,7 @@ If you want the repo to live in the base directory of the parent repo, just run
 
 Otherwise, specifiy a directory
 
-```git submodule add https://github.com/scottc11/ok-drivers.git <path-to-directory>/mbed-lib```
+```git submodule add https://github.com/scottc11/ok-drivers.git <path-to-directory>/ok-drivers```
 
 ### [Git Submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
 
