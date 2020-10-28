@@ -48,7 +48,10 @@ public:
   void reset();
 	void digitalWrite(int pin, int value);
 	int digitalRead(int pin);
-  void analogWrite(int value);
+  void analogWrite(int pin, uint8_t value);
+  void writeBankA(uint8_t data);
+  void writeBankB(uint8_t data);
+
   void ledConfig(int pin);
   void setDirection(int pin, int inOut);
   void setPolarity(int pin, int polarity);

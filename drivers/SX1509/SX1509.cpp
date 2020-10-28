@@ -4,7 +4,6 @@
 void SX1509::init(bool extClock /*false*/) {
 
   this->reset();
-  wait_ms(1);
   int clockConfig = extClock ? 0b00100000 : 0b01010010;  // use either internal or external clock signal
   //  fOSCOUT = fOSC/(2^(RegClock[3:0]-1))
   //  ClkX = fOSC/(2^(RegMisc[6:4]-1))
@@ -202,13 +201,13 @@ void SX1509::ledConfig(int pin)
   this->digitalWrite(pin, 0); // setting data LOW means LED Driver started
 }
 
-void SX1509::analogWrite(int value) {
-
-  if (value == 1) {
-    this->i2cWrite(REG_DATA_B, 0x00); 
-  } else {
-    this->i2cWrite(REG_DATA_B, 0xFF);
-  }
+/**
+ * pin: ppin number
+ * value: 0..255 (0 == led off)
+*/
+void SX1509::analogWrite(int pin, uint8_t value)
+{
+  this->setPWM(pin, value);
 }
 
 void SX1509::digitalWrite(int pin, int value) {
@@ -226,6 +225,24 @@ int SX1509::digitalRead(int pin)
   int data = this->i2cRead(reg);
   return bitRead(data, pinPos);
 }
+
+/**
+ * write an 8-bit value to all 8 bank A pins
+*/ 
+void SX1509::writeBankA(uint8_t data)
+{
+  this->i2cWrite(REG_DATA_A, data);
+}
+
+/**
+ * write an 8-bit value to all 8 bank B pins
+*/
+void SX1509::writeBankB(uint8_t data)
+{
+  this->i2cWrite(REG_DATA_B, data);
+}
+
+
 
 /**
  * 0 : IO is configured as an output
