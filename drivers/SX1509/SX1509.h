@@ -49,6 +49,8 @@ public:
 	void digitalWrite(int pin, int value);
 	int digitalRead(int pin);
   void analogWrite(int pin, uint8_t value);
+  uint8_t readBankA();
+  uint8_t readBankB();
   void writeBankA(uint8_t data);
   void writeBankB(uint8_t data);
 
@@ -67,6 +69,7 @@ public:
   void disablePullup(int pin);
   void enableInterupt(int pin, IntType type);
   void disableInterupt(int pin);
+  int getInteruptSource(Bank bank);
 
   int getBank(int pin) { return (pin < 8) ? 1 : 0; };        // for bank A increment all commands by 1, else don't increment
   int getPinPos(int pin) { return (pin < 8) ? pin : pin - 8; }; // pin bit position

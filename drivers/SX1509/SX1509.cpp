@@ -118,6 +118,20 @@ void SX1509::disableInterupt(int pin)
   this->setInterupt(pin, true, IntType::NONE);
 }
 
+
+
+/** 
+ * Interrupt source (from IOs set in RegInterruptMask)
+    0 : No interrupt has been triggered by this IO
+    1 : An interrupt has been triggered by this IO (an event as configured in relevant RegSense register occured).
+
+ * Writing '1' clears the bit in RegInterruptSource and in RegEventStatus When all bits are cleared, NINT signal goes back high.
+*/
+int SX1509::getInteruptSource(Bank bank)
+{
+  return this->i2cRead(REG_INTERRUPT_SOURCE_B + bank);
+}
+
 /** 
  * Each input can be individually debounced by setting corresponding bits in RegDebounce register.
  * At power up the debounce function is disabled. After enabling the debouncer, the change of the input value 
@@ -224,6 +238,16 @@ int SX1509::digitalRead(int pin)
   int reg = REG_DATA_B + bank;
   int data = this->i2cRead(reg);
   return bitRead(data, pinPos);
+}
+
+uint8_t SX1509::readBankA()
+{
+  return this->i2cRead(REG_DATA_A);
+}
+
+uint8_t SX1509::readBankB()
+{
+  return this->i2cRead(REG_DATA_B);
 }
 
 /**
