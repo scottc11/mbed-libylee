@@ -24,6 +24,17 @@ public:
     BANK_B = 0
   };
 
+  enum ClockSpeed
+  {
+    ULTRA_FAST = 0b00010000,
+    EXTRA_FAST = 0b00100000,
+    FAST = 0b00110000,
+    MEDIUM = 0b01000000,
+    SLOW = 0b01010000,
+    EXTRA_SLOW = 0b01100000,
+    ULTRA_SLOW = 0b01110000,
+  };
+
   enum IntType
   {
     NONE = 0,
@@ -59,7 +70,9 @@ public:
   void setPolarity(int pin, int polarity);
   void pinMode(int pin, PinMode mode, bool invertPolarity = false); // should handle all types of pin modes
   void setPWM(int pin, int value);
-  void setBlink(int pin, uint8_t onTime, uint8_t offTime, uint8_t onIntensity, uint8_t offIntensity);
+  void blinkLED(int pin, uint8_t onTime, uint8_t offTime, uint8_t onIntensity, uint8_t offIntensity);
+  void setBlinkFrequency(ClockSpeed speed);
+
   void setDriverMode(bool linear);
   void setInputDebounce(int pin, bool debounce);
   void setDebounceTime(int value);
@@ -101,14 +114,6 @@ private:
 		i2c->read(address,commands,1);
 		return commands[0];
 	}
-
-  enum ClockSpeed
-  {
-    FAST       = 0b00010000,
-    MEDIUM     = 0b00100000,
-    SLOW       = 0b00110000,
-    EXTRA_SLOW = 0b01110000,
-  };
 
   enum DriverMode
   {

@@ -322,7 +322,7 @@ ToffX:
 
 
 */
-void SX1509::setBlink(int pin, uint8_t onTime, uint8_t offTime, uint8_t onIntensity, uint8_t offIntensity)
+void SX1509::blinkLED(int pin, uint8_t onTime, uint8_t offTime, uint8_t onIntensity, uint8_t offIntensity)
 {
   this->i2cWrite(REG_T_ON[pin], (onTime > 31) ? 31 : onTime);
   this->setPWM(pin, onIntensity);
@@ -330,6 +330,17 @@ void SX1509::setBlink(int pin, uint8_t onTime, uint8_t offTime, uint8_t onIntens
   uint8_t offValue = offTime << 3; // offTime is 5 bits, from bit 7:3
   offValue |= (offIntensity & 0x07);      // offIntensity is a 3 bit number, from bit 2:0
   this->i2cWrite(REG_OFF[pin], offValue);
+}
+
+
+
+void SX1509::setBlinkFrequency(ClockSpeed speed)
+{
+  int data = this->i2cRead(REG_MISC);
+  int mask = 0b10001111; // targeting bits 6:4
+  data &= mask;
+  data |= speed;
+  this->i2cWrite(REG_MISC, data);
 }
 
 /**
