@@ -45,3 +45,12 @@ int bitFlip(int byte, int bit) {
 int two8sTo16(int byte1, int byte2) {
   return (byte2 << 8) | byte1;
 }
+
+uint32_t two16sTo32(uint16_t byte1, uint16_t byte2) {
+  return (byte2 << 16) | byte1;
+}
+
+void byte32to16(uint16_t *bytes, uint32_t byte32) {
+  bytes[0] = (byte32 >> 16) & 0xffff;
+  bytes[1] = byte32 & 0xffff;
+}

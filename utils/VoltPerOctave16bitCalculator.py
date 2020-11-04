@@ -31,7 +31,7 @@ print('half step 16 bit value: ', halfStep)
 
 VOLTAGE_MAP = []
 
-for x in range(60):
+for x in range(64):
     VOLTAGE_MAP.append(int(floor16bit + (halfStep*x)))
 
 print(VOLTAGE_MAP) # 16,890.46
