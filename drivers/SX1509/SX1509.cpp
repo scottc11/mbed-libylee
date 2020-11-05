@@ -62,7 +62,7 @@ void SX1509::setPolarity(int pin, int polarity) {
  * 11 : Both
 */
 
-void SX1509::setInterupt(int pin, bool willNotInterupt, IntType type)
+void SX1509::setInterupt(int pin, bool willNotInterupt, InteruptDirection type)
 {
   int hotValue;
   int mask;
@@ -108,14 +108,14 @@ void SX1509::setInterupt(int pin, bool willNotInterupt, IntType type)
   }
 }
 
-void SX1509::enableInterupt(int pin, IntType type)
+void SX1509::enableInterupt(int pin, InteruptDirection type)
 {
   this->setInterupt(pin, false, type);
 }
 
 void SX1509::disableInterupt(int pin)
 {
-  this->setInterupt(pin, true, IntType::NONE);
+  this->setInterupt(pin, true, InteruptDirection::NONE);
 }
 
 

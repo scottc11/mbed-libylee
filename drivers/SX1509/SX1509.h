@@ -35,12 +35,12 @@ public:
     ULTRA_SLOW = 0b01110000,
   };
 
-  enum IntType
+  enum InteruptDirection
   {
     NONE = 0,
     RISING = 1,
     FALLING = 2,
-    BOTH = 3,
+    RISE_FALL = 3,
   };
 
   SX1509(I2C *_i2c, char _addr = SX1509_ADDR) {
@@ -76,11 +76,11 @@ public:
   void setDriverMode(bool linear);
   void setInputDebounce(int pin, bool debounce);
   void setDebounceTime(int value);
-  void setInterupt(int pin, bool willNotInterupt, IntType sense);
+  void setInterupt(int pin, bool willNotInterupt, InteruptDirection sense);
   
   void enablePullup(int pin);
   void disablePullup(int pin);
-  void enableInterupt(int pin, IntType type);
+  void enableInterupt(int pin, InteruptDirection type);
   void disableInterupt(int pin);
   int getInteruptSource(Bank bank);
 
