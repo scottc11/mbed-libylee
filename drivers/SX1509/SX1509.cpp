@@ -240,6 +240,10 @@ int SX1509::digitalRead(int pin)
   return bitRead(data, pinPos);
 }
 
+
+/**
+ * returns bank A IO states in 8-bits
+*/ 
 uint8_t SX1509::readBankA()
 {
   return this->i2cRead(REG_DATA_A);
