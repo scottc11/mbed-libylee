@@ -72,6 +72,9 @@ public:
   void setPWM(int pin, int value);
   void blinkLED(int pin, uint8_t onTime, uint8_t offTime, uint8_t onIntensity, uint8_t offIntensity);
   void setBlinkFrequency(ClockSpeed speed);
+  void setOnTime(int pin, uint8_t onTime);
+  void setOffTime(int pin, uint8_t offTime, uint8_t offIntensity);
+  
 
   void setDriverMode(bool linear);
   void setInputDebounce(int pin, bool debounce);

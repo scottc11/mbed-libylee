@@ -316,27 +316,46 @@ void SX1509::setPWM(int pin, int value)
  * Invoked when TOnX != 0 and TOffX != 0. (they both default to 0x00)
  * If the I/O doesn’t support fading the LED intensity will step directly to the IOnX/IOffX value.
  * When RegData(X) is cleared, the LED will complete any current ramp, and then stay at minimum intensity
-
-TOnX:
-0 : Infinite (Static mode, TOn directly controlled by RegData, Cf §4.8.2)
-1 - 15 : TOnX = 64 * RegTOnX * (255/ClkX)
-16 - 31 : TOnX = 512 * RegTOnX * (255/ClkX)
-
-ToffX:
-
-
 */
 void SX1509::blinkLED(int pin, uint8_t onTime, uint8_t offTime, uint8_t onIntensity, uint8_t offIntensity)
 {
   this->i2cWrite(REG_T_ON[pin], (onTime > 31) ? 31 : onTime);
   this->setPWM(pin, onIntensity);
   
-  uint8_t offValue = offTime << 3; // offTime is 5 bits, from bit 7:3
-  offValue |= (offIntensity & 0x07);      // offIntensity is a 3 bit number, from bit 2:0
-  this->i2cWrite(REG_OFF[pin], offValue);
+  this->setOffTime(pin, offTime, offIntensity);
 }
 
+/**
+ * Set the amoount of time the LED will remain ON in blink mode
 
+onTime:
+  0 : Infinite (Static mode, TOn directly controlled by RegData, Cf §4.8.2)
+  1 - 15 : TOnX = 64 * RegTOnX * (255/ClkX)
+  16 - 31 : TOnX = 512 * RegTOnX * (255/ClkX)
+*/
+void SX1509::setOnTime(int pin, uint8_t onTime) {
+  this->i2cWrite(REG_T_ON[pin], (onTime > 31) ? 31 : onTime);
+}
+
+/**
+OFF Time + OFF Intensity of IO[X]:
+
+bits 7:3
+  0 : Infinite (Single shot mode, TOff directly controlled by RegData, Cf §4.8.3) 1 - 15 : TOffX = 64 * RegOffX[7:3] * (255/ClkX)
+  16 - 31 : TOffX = 512 * RegOffX[7:3] * (255/ClkX)
+
+bits 2:0
+  OFF Intensity of IO[X]
+    - Linear mode : IOffX = 4 x RegOff[2:0]
+    - Logarithmic mode (fading capable IOs only) : IOffX = f(4 x RegOffX[2:0]) , Cf §4.8.5
+*/
+
+void SX1509::setOffTime(int pin, uint8_t offTime, uint8_t offIntensity)
+{
+  uint8_t offValue = offTime << 3;   // offTime is 5 bits, from bit 7:3
+  offValue |= (offIntensity & 0x07); // offIntensity is a 3 bit number, from bit 2:0
+  this->i2cWrite(REG_OFF[pin], offValue);
+}
 
 void SX1509::setBlinkFrequency(ClockSpeed speed)
 {
