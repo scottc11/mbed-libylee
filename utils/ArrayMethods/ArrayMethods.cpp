@@ -90,16 +90,16 @@ int arr_find_closest_int(int arr[], int n, int target)
     return arr[mid]; 
 }
 
-// Returns element closest to target in arr[]
-float arr_find_closest_float(float arr[], int n, float target)
+// Returns the index of the element closest to target in arr[]
+int arr_find_closest_float(float arr[], int n, float target)
 {
     // Corner cases
     if (target <= arr[0]) {
-        return arr[0];
+        return 0;
     }
         
     if (target >= arr[n - 1]) {
-        return arr[n - 1];
+        return n - 1;
     }
 
     // Doing binary search
@@ -109,7 +109,7 @@ float arr_find_closest_float(float arr[], int n, float target)
         mid = (i + j) / 2;
 
         if (arr[mid] == target)
-            return arr[mid];
+            return mid;
 
         /* If target is less than array element, 
             then search in left */
@@ -119,7 +119,11 @@ float arr_find_closest_float(float arr[], int n, float target)
             // If target is greater than previous
             // to mid, return closest of two
             if (mid > 0 && target > arr[mid - 1]) {
-                return getClosestFloat(arr[mid - 1], arr[mid], target);
+                if (getClosestFloat(arr[mid - 1], arr[mid], target) == arr[mid - 1]) {
+                    return mid - 1;
+                } else {
+                    return mid;
+                }
             }
 
             /* Repeat for left half */
@@ -130,7 +134,12 @@ float arr_find_closest_float(float arr[], int n, float target)
         else
         {
             if (mid < n - 1 && target < arr[mid + 1]) {
-                return getClosestFloat(arr[mid], arr[mid + 1], target);
+                if (getClosestFloat(arr[mid], arr[mid + 1], target) == arr[mid]) {
+                    return mid;
+                } else {
+                    return mid + 1;
+                }
+                
             }
                 
             // update i
