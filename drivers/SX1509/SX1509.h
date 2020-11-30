@@ -24,12 +24,23 @@ public:
     BANK_B = 0
   };
 
-  enum IntType
+  enum ClockSpeed
+  {
+    ULTRA_FAST = 0b00010000,
+    EXTRA_FAST = 0b00100000,
+    FAST = 0b00110000,
+    MEDIUM = 0b01000000,
+    SLOW = 0b01010000,
+    EXTRA_SLOW = 0b01100000,
+    ULTRA_SLOW = 0b01110000,
+  };
+
+  enum InteruptDirection
   {
     NONE = 0,
     RISING = 1,
     FALLING = 2,
-    BOTH = 3,
+    RISE_FALL = 3,
   };
 
   SX1509(I2C *_i2c, char _addr = SX1509_ADDR) {
@@ -48,22 +59,33 @@ public:
   void reset();
 	void digitalWrite(int pin, int value);
 	int digitalRead(int pin);
-  void analogWrite(int value);
+  void analogWrite(int pin, uint8_t value);
+  uint8_t readBankA();
+  uint8_t readBankB();
+  void writeBankA(uint8_t data);
+  void writeBankB(uint8_t data);
+
   void ledConfig(int pin);
   void setDirection(int pin, int inOut);
   void setPolarity(int pin, int polarity);
   void pinMode(int pin, PinMode mode, bool invertPolarity = false); // should handle all types of pin modes
   void setPWM(int pin, int value);
-  void setBlink(int pin, uint8_t onTime, uint8_t offTime, uint8_t onIntensity, uint8_t offIntensity);
+  void blinkLED(int pin, uint8_t onTime, uint8_t offTime, uint8_t onIntensity, uint8_t offIntensity);
+  void setBlinkFrequency(ClockSpeed speed);
+  void setOnTime(int pin, uint8_t onTime);
+  void setOffTime(int pin, uint8_t offTime, uint8_t offIntensity);
+  
+
   void setDriverMode(bool linear);
   void setInputDebounce(int pin, bool debounce);
   void setDebounceTime(int value);
-  void setInterupt(int pin, bool willNotInterupt, IntType sense);
+  void setInterupt(int pin, bool willNotInterupt, InteruptDirection sense);
   
   void enablePullup(int pin);
   void disablePullup(int pin);
-  void enableInterupt(int pin, IntType type);
+  void enableInterupt(int pin, InteruptDirection type);
   void disableInterupt(int pin);
+  int getInteruptSource(Bank bank);
 
   int getBank(int pin) { return (pin < 8) ? 1 : 0; };        // for bank A increment all commands by 1, else don't increment
   int getPinPos(int pin) { return (pin < 8) ? pin : pin - 8; }; // pin bit position
@@ -95,14 +117,6 @@ private:
 		i2c->read(address,commands,1);
 		return commands[0];
 	}
-
-  enum ClockSpeed
-  {
-    FAST       = 0b00010000,
-    MEDIUM     = 0b00100000,
-    SLOW       = 0b00110000,
-    EXTRA_SLOW = 0b01110000,
-  };
 
   enum DriverMode
   {

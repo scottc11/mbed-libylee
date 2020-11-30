@@ -33,6 +33,7 @@ public:
 
   DAC8554(PinName spiMosi, PinName spiSck, PinName selectPin) : spi(spiMosi, NC, spiSck), select(selectPin) {
     select.write(1);
+    spi.frequency(25000000); // 25MHz
   }
   
   void init() {

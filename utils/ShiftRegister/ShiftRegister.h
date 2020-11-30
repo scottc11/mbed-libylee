@@ -11,9 +11,9 @@ class ShiftRegister {
   public:
     ShiftRegister(PinName data_pin, PinName clock_pin, PinName latch_pin) : data(data_pin), clock(clock_pin), latch(latch_pin) {
       // do something
-      latch.write(LOW);
-      data.write(LOW);
-      clock.write(LOW);
+      latch.write(0);
+      data.write(0);
+      clock.write(0);
     }
     
 

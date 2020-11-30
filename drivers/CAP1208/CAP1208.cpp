@@ -40,7 +40,12 @@ void CAP1208::calibrate() {
   i2cWrite(CALIBRATE_REG, 0xFF);
 }
 
-// for some reason we have to "clear" the INT bit everytime we read the sensors... 
+/**
+ * The ALERT# pin is an active low output that is driven when an interrupt event is detected.
+ * Interrupts are indicated by the setting of the INT bit in the Main Control Registe
+ * 
+ * for some reason we have to "clear" the INT bit everytime we read the sensors...
+*/
 void CAP1208::clearInterupt() {
   i2cWrite(MAIN_CTRL_REG, MAIN_CTRL_REG & ~0x01);
 }

@@ -4,7 +4,6 @@
 void SX1509::init(bool extClock /*false*/) {
 
   this->reset();
-  wait_ms(1);
   int clockConfig = extClock ? 0b00100000 : 0b01010010;  // use either internal or external clock signal
   //  fOSCOUT = fOSC/(2^(RegClock[3:0]-1))
   //  ClkX = fOSC/(2^(RegMisc[6:4]-1))
@@ -63,7 +62,7 @@ void SX1509::setPolarity(int pin, int polarity) {
  * 11 : Both
 */
 
-void SX1509::setInterupt(int pin, bool willNotInterupt, IntType type)
+void SX1509::setInterupt(int pin, bool willNotInterupt, InteruptDirection type)
 {
   int hotValue;
   int mask;
@@ -109,14 +108,28 @@ void SX1509::setInterupt(int pin, bool willNotInterupt, IntType type)
   }
 }
 
-void SX1509::enableInterupt(int pin, IntType type)
+void SX1509::enableInterupt(int pin, InteruptDirection type)
 {
   this->setInterupt(pin, false, type);
 }
 
 void SX1509::disableInterupt(int pin)
 {
-  this->setInterupt(pin, true, IntType::NONE);
+  this->setInterupt(pin, true, InteruptDirection::NONE);
+}
+
+
+
+/** 
+ * Interrupt source (from IOs set in RegInterruptMask)
+    0 : No interrupt has been triggered by this IO
+    1 : An interrupt has been triggered by this IO (an event as configured in relevant RegSense register occured).
+
+ * Writing '1' clears the bit in RegInterruptSource and in RegEventStatus When all bits are cleared, NINT signal goes back high.
+*/
+int SX1509::getInteruptSource(Bank bank)
+{
+  return this->i2cRead(REG_INTERRUPT_SOURCE_B + bank);
 }
 
 /** 
@@ -202,13 +215,13 @@ void SX1509::ledConfig(int pin)
   this->digitalWrite(pin, 0); // setting data LOW means LED Driver started
 }
 
-void SX1509::analogWrite(int value) {
-
-  if (value == 1) {
-    this->i2cWrite(REG_DATA_B, 0x00); 
-  } else {
-    this->i2cWrite(REG_DATA_B, 0xFF);
-  }
+/**
+ * pin: ppin number
+ * value: 0..255 (0 == led off)
+*/
+void SX1509::analogWrite(int pin, uint8_t value)
+{
+  this->setPWM(pin, value);
 }
 
 void SX1509::digitalWrite(int pin, int value) {
@@ -226,6 +239,38 @@ int SX1509::digitalRead(int pin)
   int data = this->i2cRead(reg);
   return bitRead(data, pinPos);
 }
+
+
+/**
+ * returns bank A IO states in 8-bits
+*/ 
+uint8_t SX1509::readBankA()
+{
+  return this->i2cRead(REG_DATA_A);
+}
+
+uint8_t SX1509::readBankB()
+{
+  return this->i2cRead(REG_DATA_B);
+}
+
+/**
+ * write an 8-bit value to all 8 bank A pins
+*/ 
+void SX1509::writeBankA(uint8_t data)
+{
+  this->i2cWrite(REG_DATA_A, data);
+}
+
+/**
+ * write an 8-bit value to all 8 bank B pins
+*/
+void SX1509::writeBankB(uint8_t data)
+{
+  this->i2cWrite(REG_DATA_B, data);
+}
+
+
 
 /**
  * 0 : IO is configured as an output
@@ -271,24 +316,54 @@ void SX1509::setPWM(int pin, int value)
  * Invoked when TOnX != 0 and TOffX != 0. (they both default to 0x00)
  * If the I/O doesn’t support fading the LED intensity will step directly to the IOnX/IOffX value.
  * When RegData(X) is cleared, the LED will complete any current ramp, and then stay at minimum intensity
-
-TOnX:
-0 : Infinite (Static mode, TOn directly controlled by RegData, Cf §4.8.2)
-1 - 15 : TOnX = 64 * RegTOnX * (255/ClkX)
-16 - 31 : TOnX = 512 * RegTOnX * (255/ClkX)
-
-ToffX:
-
-
 */
-void SX1509::setBlink(int pin, uint8_t onTime, uint8_t offTime, uint8_t onIntensity, uint8_t offIntensity)
+void SX1509::blinkLED(int pin, uint8_t onTime, uint8_t offTime, uint8_t onIntensity, uint8_t offIntensity)
 {
   this->i2cWrite(REG_T_ON[pin], (onTime > 31) ? 31 : onTime);
   this->setPWM(pin, onIntensity);
   
-  uint8_t offValue = offTime << 3; // offTime is 5 bits, from bit 7:3
-  offValue |= (offIntensity & 0x07);      // offIntensity is a 3 bit number, from bit 2:0
+  this->setOffTime(pin, offTime, offIntensity);
+}
+
+/**
+ * Set the amoount of time the LED will remain ON in blink mode
+
+onTime:
+  0 : Infinite (Static mode, TOn directly controlled by RegData, Cf §4.8.2)
+  1 - 15 : TOnX = 64 * RegTOnX * (255/ClkX)
+  16 - 31 : TOnX = 512 * RegTOnX * (255/ClkX)
+*/
+void SX1509::setOnTime(int pin, uint8_t onTime) {
+  this->i2cWrite(REG_T_ON[pin], (onTime > 31) ? 31 : onTime);
+}
+
+/**
+OFF Time + OFF Intensity of IO[X]:
+
+bits 7:3
+  0 : Infinite (Single shot mode, TOff directly controlled by RegData, Cf §4.8.3) 1 - 15 : TOffX = 64 * RegOffX[7:3] * (255/ClkX)
+  16 - 31 : TOffX = 512 * RegOffX[7:3] * (255/ClkX)
+
+bits 2:0
+  OFF Intensity of IO[X]
+    - Linear mode : IOffX = 4 x RegOff[2:0]
+    - Logarithmic mode (fading capable IOs only) : IOffX = f(4 x RegOffX[2:0]) , Cf §4.8.5
+*/
+
+void SX1509::setOffTime(int pin, uint8_t offTime, uint8_t offIntensity)
+{
+  uint8_t offValue = offTime << 3;   // offTime is 5 bits, from bit 7:3
+  offValue |= (offIntensity & 0x07); // offIntensity is a 3 bit number, from bit 2:0
   this->i2cWrite(REG_OFF[pin], offValue);
+}
+
+void SX1509::setBlinkFrequency(ClockSpeed speed)
+{
+  int data = this->i2cRead(REG_MISC);
+  int mask = 0b10001111; // targeting bits 6:4
+  data &= mask;
+  data |= speed;
+  this->i2cWrite(REG_MISC, data);
 }
 
 /**
