@@ -4,17 +4,35 @@
 #include <mbed.h>
 #include <OK_I2C.h>
 #include <BitwiseMethods.h>
+#include <OK_Coordinates.h>
 
 #define IS31FL3731_ADDR 0xE8
 
 
-class IS31FL3731 : public OK_I2C
-{
+class IS31FL3731 : public OK_I2C {
+
 public:
+
+    enum Frames
+    {
+        FRAME_1 = 0,
+        FRAME_2 = 1,
+        FRAME_3 = 2,
+        FRAME_4 = 3,
+        FRAME_5 = 4,
+        FRAME_6 = 5,
+        FRAME_7 = 6,
+        FRAME_8 = 7,
+        FRAME_9 = 0x0B
+    };
+
     IS31FL3731(I2C *i2c_ptr, uint8_t addr = IS31FL3731_ADDR) {
         address = addr;
         i2c = i2c_ptr;
     };
+
+    Frames currFrame;
+    uint8_t frameData[18]; // array of bytes containing LED on/off data for matrix
 
 
     /*
@@ -27,10 +45,10 @@ public:
     */
     void init() {
 
-        setFrame(FRAME_9);
+        selectFrame(FRAME_9);
         i2cWrite(SHUTDOWN_REG, 0x00); // shutdown
 
-        setFrame(FRAME_1);
+        selectFrame(FRAME_1);
         for (int i = 0; i < 0x12; i++) // open all 12 leds lanes for page 0
         {
             if (i < 3) {
@@ -44,13 +62,13 @@ public:
 
         setFramePWM_(40);
 
-        setFrame(FRAME_9);
-        i2cWrite(SHUTDOWN_REG, 0x01);       // normal operation
-        i2cWrite(CONFIG_REG, PICTURE_MODE); // Configure the operation mode
-        i2cWrite(PICTUREFRAME_REG, 0x00);   // Set the display frame in Picture Mode
+        selectFrame(FRAME_9);
+        i2cWrite(SHUTDOWN_REG, 0x01);         // normal operation
+        i2cWrite(CONFIG_REG, PICTURE_MODE);   // Set the display frame in Picture Mode
+        displayFrame(FRAME_1);
         i2cWrite(AUTO_PLAY_CTRL_REG_1, 0x00); // Set the way of display in Auto Frame Play Mode
 
-        setFrame(FRAME_1);
+        selectFrame(FRAME_1);
     }
 
     /**
@@ -60,25 +78,35 @@ public:
     */
     void setPixel(uint8_t x, uint8_t y, uint8_t state)
     {
-        // zero indexed coordinate system
-        // grid map formula == x + (y * 16)
-        uint8_t data;
-        uint8_t bitPos;
-        uint8_t matrixPos;
-        
-        if (x < 8) {
-            bitPos = x;
-            matrixPos = 0;
-        } else {
-            bitPos = x - 8;
-            matrixPos = 1;
+        CoordinateXY coor = calculateMatrixCoordinate(x, y);
+
+        frameData[coor.y] = bitWrite(frameData[coor.y], coor.x, state);
+        i2cWrite(coor.y, frameData[coor.y]);
+    }
+
+    /**
+     * Convert x y coordinates into an array accessable format
+    */ 
+    CoordinateXY calculateMatrixCoordinate(uint8_t x, uint8_t y) {
+        CoordinateXY coordinates {x, y};
+        if (x < 8)
+        {
+            coordinates.x = x;
+            coordinates.y = (y * 2) + 0;
         }
-
-        y = (y * 2) + matrixPos;
-
-        data = bitWrite(0x00, bitPos, state);
+        else
+        {
+            coordinates.x = x - 8;
+            coordinates.y = (y * 2) + 1;
+        }
         
-        i2cWrite(y, data);
+        return coordinates;
+    }
+
+    void togglePixel(uint8_t x, uint8_t y) {
+        CoordinateXY cord = calculateMatrixCoordinate(x, y);
+        frameData[cord.y] = bitFlip(frameData[cord.y], cord.x);
+        i2cWrite(cord.y, frameData[cord.y]);
     }
 
     void setPixelPWM(uint8_t x, uint8_t y, uint8_t pwm)
@@ -95,7 +123,7 @@ public:
     */
     void setFramePWM_(uint8_t value) {
         for (int i = 0x24; i < 0xB4; i++) {
-            i2cWrite(i, value > 255 ? 0 : value); // PWM set
+            i2cWrite(i, value); // PWM set
         }
     }
 
@@ -124,11 +152,20 @@ public:
         }
     }
 
-    void setFrame(int frame) {
-        i2cWrite(COMMAND_REG, frame);
+    /**
+     * select which frame to write data too
+    */ 
+    void selectFrame(Frames frame) {
+        currFrame = frame;
+        i2cWrite(COMMAND_REG, currFrame);
     }
 
-    void displayFrame(int frame) {
+    /**
+     * The Picture Display Register sets display frame in Picture Mode.
+     * @param frame the frame to display
+     */
+    void displayFrame(Frames frame) {
+        i2cWrite(PICTUREFRAME_REG, frame);
     }
 
 private:
@@ -154,18 +191,6 @@ private:
         AUDIO_FRAME_PLAY_MODE = 0x02,
     };
 
-    enum Frames
-    {
-        FRAME_1 = 0,
-        FRAME_2 = 1,
-        FRAME_3 = 2,
-        FRAME_4 = 3,
-        FRAME_5 = 4,
-        FRAME_6 = 5,
-        FRAME_7 = 6,
-        FRAME_8 = 7,
-        FRAME_9 = 0x0B,
-    };
 };
 
 #endif
