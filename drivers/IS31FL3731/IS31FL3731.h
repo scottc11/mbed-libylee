@@ -48,19 +48,11 @@ public:
         selectFrame(FRAME_9);
         i2cWrite(SHUTDOWN_REG, 0x00); // shutdown
 
+        // initialize frame 1 by defualt. Important for initializing a frame
         selectFrame(FRAME_1);
-        for (int i = 0; i < 0x12; i++) // open all 12 leds lanes for page 0
-        {
-            if (i < 3) {
-                i2cWrite(i, 0b01010101); // led ON
-            } else {
-                i2cWrite(i, 0x00); // led OFF
-            }
-        }
-        
         setFrameBlink(false);
-
         setFramePWM_(40);
+        // ----------------------------------
 
         selectFrame(FRAME_9);
         i2cWrite(SHUTDOWN_REG, 0x01);         // normal operation
