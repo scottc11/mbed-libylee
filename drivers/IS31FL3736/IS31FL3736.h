@@ -47,10 +47,10 @@ public:
         setPWM(127);
         // setLED(8, 9, true);
 
-        i2cWrite(0xFE, 0xc5); // unlock FDh
-        i2cWrite(0xFD, 0x03); // write page 3
-        i2cWrite(0x00, 0x01); // normal operation
-        i2cWrite(0x01, 0xFF); // set global current
+        writeRegister(0xFE, 0xc5); // unlock FDh
+        writeRegister(0xFD, 0x03); // write page 3
+        writeRegister(0x00, 0x01); // normal operation
+        writeRegister(0x01, 0xFF); // set global current
     }
 
     /**
@@ -68,7 +68,7 @@ public:
         }
         CoordinateXY coords = convertCoordinates(x, y);
         state[coords.y] = bitSet(state[coords.y], coords.x);
-        i2cWrite(coords.y, state[coords.y]);
+        writeRegister(coords.y, state[coords.y]);
     }
 
     void toggleLED(int x, int y) {
@@ -79,7 +79,7 @@ public:
         }
         CoordinateXY coords = convertCoordinates(x, y);
         state[coords.y] = bitFlip(state[coords.y], coords.x);
-        i2cWrite(coords.y, state[coords.y]);
+        writeRegister(coords.y, state[coords.y]);
     }
 
     bool ledState(int x, int y) {
@@ -106,7 +106,7 @@ public:
         setPage(PAGE_0); // write page 0
 
         for (uint8_t i = 0; i < 24; i++) {
-            i2cWrite(i, 0x55); // open all led
+            writeRegister(i, 0x55); // open all led
         }
     }
 
@@ -115,7 +115,7 @@ public:
         setPage(PAGE_0); // write page0
 
         for (uint8_t i = 0; i < 24; i++) {
-            i2cWrite(i, 0x00); // close all led
+            writeRegister(i, 0x00); // close all led
         }
     }
     
@@ -131,35 +131,35 @@ public:
     */
     void unlockCommandReg()
     {
-        i2cWrite(CRWL_REG, 0xC5);
+        writeRegister(CRWL_REG, 0xC5);
     }
 
     void Select_Sw_Pull(uint8_t data) {
         unlockCommandReg();
-        i2cWrite(COMMAND_REG, PAGE_3); // write page 3 (COULD BE WRONG)
-        i2cWrite(SW_PULLUP_SEL, data);
+        writeRegister(COMMAND_REG, PAGE_3); // write page 3 (COULD BE WRONG)
+        writeRegister(SW_PULLUP_SEL, data);
     }
 
     void Select_Cs_Pull(uint8_t data) {
         unlockCommandReg();
-        i2cWrite(COMMAND_REG, PAGE_3); // write page 3 (COULD BE WRONG)
-        i2cWrite(CS_PULLDOWN_SEL, data);
+        writeRegister(COMMAND_REG, PAGE_3); // write page 3 (COULD BE WRONG)
+        writeRegister(CS_PULLDOWN_SEL, data);
     }
 
     void setPWM(uint8_t value, bool all=false) {
         unlockCommandReg();            // unlock FDh
-        i2cWrite(COMMAND_REG, PAGE_1); // write page 1
+        writeRegister(COMMAND_REG, PAGE_1); // write page 1
 
         for (int i = 0; i < 192; i = i + 2)
         {
-            i2cWrite(i, value); // write all pwm
+            writeRegister(i, value); // write all pwm
         }
     }
     
     void setGlobalCurrent(uint8_t data) {
         unlockCommandReg();
         setPage(PAGE_3);
-        i2cWrite(GLB_CURR_CTRL, 0xFF); // set global current
+        writeRegister(GLB_CURR_CTRL, 0xFF); // set global current
     }
 
     /**
@@ -214,7 +214,7 @@ public:
     // must unlock before
     void setPage(int page) {
         currPage = page;
-        i2cWrite(COMMAND_REG, page);
+        writeRegister(COMMAND_REG, page);
     }
 
     void Brightness_Level(uint8_t data);

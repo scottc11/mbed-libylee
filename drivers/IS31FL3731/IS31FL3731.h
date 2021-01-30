@@ -46,7 +46,7 @@ public:
     void init() {
 
         selectFrame(FRAME_9);
-        i2cWrite(SHUTDOWN_REG, 0x00); // shutdown
+        writeRegister(SHUTDOWN_REG, 0x00); // shutdown
 
         // initialize frame 1 by defualt. Important for initializing a frame
         selectFrame(FRAME_1);
@@ -55,10 +55,10 @@ public:
         // ----------------------------------
 
         selectFrame(FRAME_9);
-        i2cWrite(SHUTDOWN_REG, 0x01);         // normal operation
-        i2cWrite(CONFIG_REG, PICTURE_MODE);   // Set the display frame in Picture Mode
+        writeRegister(SHUTDOWN_REG, 0x01);         // normal operation
+        writeRegister(CONFIG_REG, PICTURE_MODE);   // Set the display frame in Picture Mode
         displayFrame(FRAME_1);
-        i2cWrite(AUTO_PLAY_CTRL_REG_1, 0x00); // Set the way of display in Auto Frame Play Mode
+        writeRegister(AUTO_PLAY_CTRL_REG_1, 0x00); // Set the way of display in Auto Frame Play Mode
 
         selectFrame(FRAME_1);
     }
@@ -73,7 +73,7 @@ public:
         CoordinateXY coor = calculateMatrixCoordinate(x, y);
 
         frameData[coor.y] = bitWrite(frameData[coor.y], coor.x, state);
-        i2cWrite(coor.y, frameData[coor.y]);
+        writeRegister(coor.y, frameData[coor.y]);
     }
 
     /**
@@ -98,7 +98,7 @@ public:
     void togglePixel(uint8_t x, uint8_t y) {
         CoordinateXY cord = calculateMatrixCoordinate(x, y);
         frameData[cord.y] = bitFlip(frameData[cord.y], cord.x);
-        i2cWrite(cord.y, frameData[cord.y]);
+        writeRegister(cord.y, frameData[cord.y]);
     }
 
     void setPixelPWM(uint8_t x, uint8_t y, uint8_t pwm)
@@ -106,7 +106,7 @@ public:
         uint8_t lednum = x + (y * 16); // convert x y
         if (lednum >= 144)
             return;
-        i2cWrite(FRAME_PWM_REG + lednum, pwm);
+        writeRegister(FRAME_PWM_REG + lednum, pwm);
     }
 
     /**
@@ -115,7 +115,7 @@ public:
     */
     void setFramePWM_(uint8_t value) {
         for (int i = 0x24; i < 0xB4; i++) {
-            i2cWrite(i, value); // PWM set
+            writeRegister(i, value); // PWM set
         }
     }
 
@@ -124,7 +124,7 @@ public:
     */
     void setFrameBlink(bool blink) {
         for (int i = 0x12; i < 0x24; i++) {
-            i2cWrite(i, blink ? 0xff : 0x00);
+            writeRegister(i, blink ? 0xff : 0x00);
         }
     }
 
@@ -140,7 +140,7 @@ public:
     // turn all leds off for the current frame
     void clearFrame() {
         for (int i = 0; i < 0x12; i++) {
-            i2cWrite(i, 0x00); // led OFF
+            writeRegister(i, 0x00); // led OFF
         }
     }
 
@@ -149,7 +149,7 @@ public:
     */ 
     void selectFrame(Frames frame) {
         currFrame = frame;
-        i2cWrite(COMMAND_REG, currFrame);
+        writeRegister(COMMAND_REG, currFrame);
     }
 
     /**
@@ -157,7 +157,7 @@ public:
      * @param frame the frame to display
      */
     void displayFrame(Frames frame) {
-        i2cWrite(PICTUREFRAME_REG, frame);
+        writeRegister(PICTUREFRAME_REG, frame);
     }
 
 private:
