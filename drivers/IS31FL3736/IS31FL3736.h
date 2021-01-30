@@ -16,7 +16,8 @@
 
 #include <mbed.h>
 #include <OK_I2C.h>
-
+#include <BitwiseMethods.h>
+#include <OK_Coordinates.h>
 
 #define IS31FL3736_ADDR 0xA0 // 8-bit addr
 
@@ -27,8 +28,11 @@ public:
         i2c = i2c_ptr;
     };
 
+    uint8_t maxX = 7;
+    uint8_t maxY = 11;
     uint8_t currPage;
-
+    uint8_t state[24]; // 24 8-bit values for holding on/off state of LEDs. X value stored in bits, Y value for accessing the 8-bit X values
+    
     /**
      * Note: FDh is locked when power up, need to unlock this register before write command to it
      * 
@@ -50,29 +54,51 @@ public:
     }
 
     /**
-     * FEh Command Register Write Lock
-     * 
-     * To select the PG0~PG3, need to unlock this register first, with the purpose to avoid misoperation of this register. 
-     * When FEh is written with 0xC5, FDh is allowed to modify once, after the FDh is modified the FEh will reset to be 0x00 at once.
-     * 
-     * CRWL Command Register WriteLock
-     * 0x00 FDh write disable
-     * 0xC5 FDh write enable once
-    */
-    void unlockCommandReg() {
-        i2cWrite(CRWL_REG, 0xC5);
-    }
-
-    /**
      * The LED On/Off Registers store the on or off state of each LED in the matrix.
      * For example, if 00h=0x01, SW1~CS1 will open, if 01h=0x01, SW1~CS5 will open.
+     * 
+     * @param x 0..7
+     * @param y 0..11
+     * @param state true = LED ON, false = LED OFF
     */
-    void setLED(int x, int y, bool state) {
+    void setLED(int x, int y, bool value) {
         if (currPage != PAGE_0) {
             unlockCommandReg();
             setPage(PAGE_0);
         }
-        i2cWrite(23, 0x55); //open all led
+        CoordinateXY coords = convertCoordinates(x, y);
+        state[coords.y] = bitSet(state[coords.y], coords.x);
+        i2cWrite(coords.y, state[coords.y]);
+    }
+
+    void toggleLED(int x, int y) {
+        if (currPage != PAGE_0)
+        {
+            unlockCommandReg();
+            setPage(PAGE_0);
+        }
+        CoordinateXY coords = convertCoordinates(x, y);
+        state[coords.y] = bitFlip(state[coords.y], coords.x);
+        i2cWrite(coords.y, state[coords.y]);
+    }
+
+    bool ledState(int x, int y) {
+        CoordinateXY coords = convertCoordinates(x, y);
+        return bitRead(state[coords.y], coords.x);
+    }
+
+    CoordinateXY convertCoordinates(int x, int y) {
+        y = y * 2;
+        if (x < 4)
+        {
+            x = x * 2;
+        }
+        else
+        {
+            x = (x - 4) * 2;
+            y += 1;
+        }
+        return CoordinateXY {x, y};
     }
 
     void allLEDsOn() {
@@ -92,6 +118,21 @@ public:
             i2cWrite(i, 0x00); // close all led
         }
     }
+    
+    /**
+     * FEh Command Register Write Lock
+     * 
+     * To select the PG0~PG3, need to unlock this register first, with the purpose to avoid misoperation of this register. 
+     * When FEh is written with 0xC5, FDh is allowed to modify once, after the FDh is modified the FEh will reset to be 0x00 at once.
+     * 
+     * CRWL Command Register WriteLock
+     * 0x00 FDh write disable
+     * 0xC5 FDh write enable once
+    */
+    void unlockCommandReg()
+    {
+        i2cWrite(CRWL_REG, 0xC5);
+    }
 
     void Select_Sw_Pull(uint8_t data) {
         unlockCommandReg();
@@ -105,7 +146,7 @@ public:
         i2cWrite(CS_PULLDOWN_SEL, data);
     }
 
-    void setPWM(uint8_t value) {
+    void setPWM(uint8_t value, bool all=false) {
         unlockCommandReg();            // unlock FDh
         i2cWrite(COMMAND_REG, PAGE_1); // write page 1
 
