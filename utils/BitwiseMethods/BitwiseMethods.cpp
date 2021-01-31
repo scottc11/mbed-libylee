@@ -60,7 +60,12 @@ int bitFlip(int byte, int bit) {
   return bitWrite(byte, bit, !bitRead(byte, bit));
 }
 
-int two8sTo16(int byte1, int byte2) {
+/**
+ * @brief merge two 8-bit values into a single 16-bit value
+ * @param byte1 bits 7..0
+ * @param byte2 bits 15..8
+ */ 
+uint16_t two8sTo16(int byte1, int byte2) {
   return (byte2 << 8) | byte1;
 }
 

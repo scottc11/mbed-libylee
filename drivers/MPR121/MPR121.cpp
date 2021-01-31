@@ -145,7 +145,7 @@ void MPR121::handleTouch() {
 */
 uint16_t MPR121::getTouched()
 {
-    uint16_t touched = readRegister(ELE0_7_STAT);
+    uint16_t touched = readRegister16(ELE0_7_STAT);
     this->clearInterupt();
     return touched;
 }
@@ -171,14 +171,6 @@ void MPR121::clearInterupt() {
  * @brief Attach a function to be called everytime a pad is touched
  * 
  * @param func MBED Callback function which takes a single uint8_t argument
- * @section example
- * @code
- * void onTouch(uint8_t pad) {
- *   leds.setLED(0, pad, true);
- * }
- * 
- * touchPads.attachCallbackTouched(callback(onTouch));
- * @endcode
 */
 void MPR121::attachCallbackTouched(Callback<void(uint8_t pad)> func)
 {
@@ -189,14 +181,6 @@ void MPR121::attachCallbackTouched(Callback<void(uint8_t pad)> func)
  * @brief Attach a function to be called everytime a pad is released
  * 
  * @param func MBED Callback function which takes a single uint8_t argument
- * @section example
- * @code
- * void onRelease(uint8_t pad) {
- *   leds.setLED(0, pad, true);
- * }
- * 
- * touchPads.attachCallbackReleased(callback(onRelease));
- * @endcode
 */
 void MPR121::attachCallbackReleased(Callback<void(uint8_t pad)> func)
 {

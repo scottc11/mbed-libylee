@@ -2,6 +2,7 @@
 #define __OK_I2C_H
 
 #include <mbed.h>
+#include <BitwiseMethods.h>
 
 class OK_I2C {
 public:
@@ -42,22 +43,19 @@ public:
      */
     char readRegister(char reg)
     {
-        char commands[2];
-        commands[0] = reg;
-        i2c->write(address, commands, 1);
-        i2c->read(address, commands, 1);
-        return commands[0];
+        char buffer[2];
+        buffer[0] = reg;
+        i2c->write(address, buffer, 1);
+        i2c->read(address, buffer, 1);
+        return buffer[0];
     }
 
-    // not working
     uint16_t readRegister16(char reg) {
-        char data[2];
-        volatile uint16_t value;
-        data[0] = reg;
-        i2c->write(address, data, 1, true);
-        i2c->read(address, data, 2);
-        value = data[1];
-        return value;
+        char buffer[2];
+        buffer[0] = reg;
+        i2c->write(address, buffer, 1, true);
+        i2c->read(address, buffer, 2);
+        return two8sTo16(buffer[0], buffer[1]);
     }
 };
 
