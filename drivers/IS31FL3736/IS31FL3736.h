@@ -59,7 +59,7 @@ public:
      * 
      * @param x 0..7
      * @param y 0..11
-     * @param state true = LED ON, false = LED OFF
+     * @param value true = LED ON, false = LED OFF
     */
     void setLED(int x, int y, bool value) {
         if (currPage != PAGE_0) {
@@ -67,7 +67,7 @@ public:
             setPage(PAGE_0);
         }
         CoordinateXY coords = convertCoordinates(x, y);
-        state[coords.y] = bitSet(state[coords.y], coords.x);
+        state[coords.y] = bitWrite(state[coords.y], coords.x, value);
         writeRegister(coords.y, state[coords.y]);
     }
 
