@@ -110,6 +110,10 @@ void MPR121::disable(void)
     return;
 }
 
+/** This method gets called everytime the MPR121 delivers an interupt.
+ * 
+ * Calls both touch and release callbacks with the given pad that was touched.
+*/
 void MPR121::handleTouch() {
     // Get the currently touched pads
     currTouched = this->getTouched();
@@ -163,11 +167,37 @@ void MPR121::clearInterupt() {
     return;
 }
 
+/**
+ * @brief Attach a function to be called everytime a pad is touched
+ * 
+ * @param func MBED Callback function which takes a single uint8_t argument
+ * @section example
+ * @code
+ * void onTouch(uint8_t pad) {
+ *   leds.setLED(0, pad, true);
+ * }
+ * 
+ * touchPads.attachCallbackTouched(callback(onTouch));
+ * @endcode
+*/
 void MPR121::attachCallbackTouched(Callback<void(uint8_t pad)> func)
 {
     touchedCallback = func;
 }
 
+/**
+ * @brief Attach a function to be called everytime a pad is released
+ * 
+ * @param func MBED Callback function which takes a single uint8_t argument
+ * @section example
+ * @code
+ * void onRelease(uint8_t pad) {
+ *   leds.setLED(0, pad, true);
+ * }
+ * 
+ * touchPads.attachCallbackReleased(callback(onRelease));
+ * @endcode
+*/
 void MPR121::attachCallbackReleased(Callback<void(uint8_t pad)> func)
 {
     releasedCallback = func;
