@@ -25,7 +25,7 @@
 
 #include <mbed.h>
 #include <OK_I2C.h>
-
+#include <BitwiseMethods.h>
 
 /**
  *  @class MPR121
@@ -36,9 +36,14 @@ private:
     InterruptIn irq;
     volatile uint16_t _button;
     volatile uint32_t _button_has_changed;
+    
+    volatile bool interupt {false};
+    uint16_t currTouched {0};
+    uint16_t prevTouched {0};
+    
+    Callback<void(uint8_t pad)> touchedCallback;
+    Callback<void(uint8_t pad)> releasedCallback;
 
-    /** The interrupt handler for the IRQ pin
-     */
     void irq_handler(void);
 
 public:
@@ -54,42 +59,23 @@ public:
         ADDR_SDA         /*!< ADDR connected to SCL */
     };
 
-    /** Create the MPR121 object
-     *  @param i2c - A defined I2C object
-     *  @param pin - A defined InterruptIn object
-     *  @param i2c_addr - Connection of the address line
-     */
     MPR121(I2C *i2c_ptr, PinName irq_pin, MPR121_ADDR i2c_addr = ADDR_VSS) : irq(irq_pin) {
         address = i2c_addr << 1;
         i2c = i2c_ptr;
     }
 
-    /** Clear state variables and initilize the dependant objects
-     */
     void init(void);
-
-    /** Allow the IC to run and collect user input
-     */
     void enable(void);
-
-    /** Stop the IC and put into low power mode
-     */
     void disable(void);
 
-    /** Determine if a new button press event occured
-     *  Upon calling the state is cleared until another press is detected
-     *  @return 1 if a press has been detected since the last call, 0 otherwise
-     */
-    uint32_t isPressed(void);
-
-    /** Get the electrode status (ELE12 ... ELE0 -> b15 xxx b11 ... b0
-     *  The buttons are bit mapped. ELE0 = b0 ... ELE11 = b11 b12 ... b15 undefined
-     *  @return The state of all buttons
-     */
-    uint16_t buttonPressed(void);
+    void handleTouch();
     uint16_t getTouched();
     bool wasTouched();
     bool wasReleased();
+
+    void clearInterupt();
+    void attachCallbackTouched(Callback<void(uint8_t pad)> func);
+    void attachCallbackReleased(Callback<void(uint8_t pad)> func);
 
     /**
      *  @enum MPR121_REGISTER

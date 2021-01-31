@@ -23,6 +23,9 @@
 #include "MPR121.h"
 #include "mbed_debug.h"
 
+/**
+ * Clear state variables and initilize the dependant objects
+*/
 void MPR121::init(void)
 {
     // set the i2c speed
@@ -45,7 +48,6 @@ void MPR121::init(void)
     MPR121::writeRegister(FDLF, 0x2);  //REG 0x32
 
     // Touch / Release Threshold
-    // cache.freescale.com/files/sensors/doc/app_note/AN3892.pdf
     for (int i = 0; i < (12 * 2); i += 2) // touch
     {
         MPR121::writeRegister(static_cast<MPR121_REGISTER>(E0TTH + i), 0x20); //REG 0x41...0x58 odd
@@ -63,7 +65,6 @@ void MPR121::init(void)
     MPR121::writeRegister(CDT_CONFIG, 0x20); //REG 0x5D default 24
 
     // Auto-Configuration Registers
-    // http://cache.freescale.com/files/sensors/doc/app_note/AN3889.pdf
     MPR121::writeRegister(AUTO_CFG0, 0x33); // REG 0x7B
     MPR121::writeRegister(AUTO_CFG1, 0x07); // REG 0x7C
     MPR121::writeRegister(USL, 0xc9);       // REG 0x7D((3.3-.07)/3.3) * 256
@@ -77,6 +78,9 @@ void MPR121::init(void)
     return;
 }
 
+/** 
+ * Allow the IC to run and collect user input
+*/
 void MPR121::enable(void)
 {
     _button = 0;
@@ -88,42 +92,83 @@ void MPR121::enable(void)
     return;
 }
 
+/**
+ * Stop the IC and put into low power mode 
+*/
 void MPR121::disable(void)
 {
     // detach the interrupt handler
     irq.fall(NULL);
     _button = 0;
     _button_has_changed = 0;
-    //  put the device in low current consumption mode - dont re-init registers
-    MPR121::writeRegister(ECR, 0x0);
-    MPR121::writeRegister(AUTO_CFG0, 0x0); // REG 0x7B
-    MPR121::writeRegister(AUTO_CFG1, 0x0); // REG 0x7C
+    
+    // put the device in low current consumption mode - dont re-init registers
+    writeRegister(ECR, 0x0);
+    writeRegister(AUTO_CFG0, 0x0); // REG 0x7B
+    writeRegister(AUTO_CFG1, 0x0); // REG 0x7C
 
     return;
 }
 
-/**
+void MPR121::handleTouch() {
+    // Get the currently touched pads
+    currTouched = this->getTouched();
+
+    if (currTouched != prevTouched)
+    {
+        for (uint8_t i = 0; i < 12; i++)
+        {
+            // it if *is* touched and *wasnt* touched before, alert!
+            if (bitRead(currTouched, i) && !bitRead(prevTouched, i))
+            {
+                if (touchedCallback) touchedCallback(i);
+            }
+
+            // if it *was* touched and now *isnt*, alert!
+            if (!bitRead(currTouched, i) && bitRead(prevTouched, i))
+            {
+                if (releasedCallback) releasedCallback(i);
+            }
+        }
+
+        // reset our state
+        prevTouched = currTouched;
+    }
+}
+
+/** Fetches currently touched pad data from MPR121 then clears class interupt
  * @return 16 bit value containing status of all 12 pads
 */
 uint16_t MPR121::getTouched()
 {
     uint16_t touched = readRegister(ELE0_7_STAT);
+    this->clearInterupt();
     return touched;
 }
 
-uint32_t MPR121::isPressed(void)
-{
-    return _button_has_changed;
-}
 
-uint16_t MPR121::buttonPressed(void)
-{
-    _button_has_changed = 0;
-    return _button;
-}
-
+/** The interrupt handler for the IRQ pin */
 void MPR121::irq_handler(void)
 {
-    _button_has_changed = 1;
+    interupt = true;
     return;
+}
+
+bool MPR121::wasTouched() {
+    return interupt;
+}
+
+void MPR121::clearInterupt() {
+    interupt = false;
+    return;
+}
+
+void MPR121::attachCallbackTouched(Callback<void(uint8_t pad)> func)
+{
+    touchedCallback = func;
+}
+
+void MPR121::attachCallbackReleased(Callback<void(uint8_t pad)> func)
+{
+    releasedCallback = func;
 }
