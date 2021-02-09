@@ -43,6 +43,7 @@ private:
     
     Callback<void(uint8_t pad)> touchedCallback;
     Callback<void(uint8_t pad)> releasedCallback;
+    Callback<void()> interuptCallback;
 
     void irq_handler(void);
 
@@ -68,12 +69,13 @@ public:
     void enable(void);
     void disable(void);
 
-    void handleTouch();
+    uint16_t handleTouch();
     uint16_t getTouched();
     bool wasTouched();
     bool wasReleased();
 
     void clearInterupt();
+    void attachInteruptCallback(Callback<void()> func);
     void attachCallbackTouched(Callback<void(uint8_t pad)> func);
     void attachCallbackReleased(Callback<void(uint8_t pad)> func);
 

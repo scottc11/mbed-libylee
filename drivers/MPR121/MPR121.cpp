@@ -110,11 +110,13 @@ void MPR121::disable(void)
     return;
 }
 
-/** This method gets called everytime the MPR121 delivers an interupt.
- * 
+/**
+ * @brief This method gets called everytime the MPR121 delivers an interupt.
  * Calls both touch and release callbacks with the given pad that was touched.
+ * 
+ * @return the currently touched (or not touched) pads
 */
-void MPR121::handleTouch() {
+uint16_t MPR121::handleTouch() {
     // Get the currently touched pads
     currTouched = this->getTouched();
 
@@ -122,13 +124,13 @@ void MPR121::handleTouch() {
     {
         for (uint8_t i = 0; i < 12; i++)
         {
-            // it if *is* touched and *wasnt* touched before, alert!
+            // it if *is* touched and *wasnt* touched before, execute callback
             if (bitRead(currTouched, i) && !bitRead(prevTouched, i))
             {
                 if (touchedCallback) touchedCallback(i);
             }
 
-            // if it *was* touched and now *isnt*, alert!
+            // if it *was* touched and now *isnt*, execute callback
             if (!bitRead(currTouched, i) && bitRead(prevTouched, i))
             {
                 if (releasedCallback) releasedCallback(i);
@@ -137,6 +139,7 @@ void MPR121::handleTouch() {
 
         // reset our state
         prevTouched = currTouched;
+        return currTouched;
     }
 }
 
@@ -151,10 +154,20 @@ uint16_t MPR121::getTouched()
 }
 
 
-/** The interrupt handler for the IRQ pin */
-void MPR121::irq_handler(void)
-{
-    interupt = true;
+/**
+ * @brief The interrupt handler for the IRQ pin
+ * if callback present, executes the callback, else, sets an interupt flag
+*/
+void MPR121::irq_handler(void) {
+    // handle event queue here
+    // if you call handleTouch() in this method, you would be executing unsafe IRQ code (i2c comms), so
+    // you must use a thread/event queue to execute the code later.
+    // Adding handleTouch to the queue could possibly be done using an additional callback function, as to build a more reusable MPR121 class
+    if (interuptCallback) {
+        interuptCallback();
+    } else {
+        interupt = true;
+    }
     return;
 }
 
@@ -165,6 +178,10 @@ bool MPR121::wasTouched() {
 void MPR121::clearInterupt() {
     interupt = false;
     return;
+}
+
+void MPR121::attachInteruptCallback(Callback<void()> func) {
+    interuptCallback = func;
 }
 
 /**
