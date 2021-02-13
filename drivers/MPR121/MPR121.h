@@ -1,24 +1,49 @@
 /**
  * @file    MPR121.h
  * @brief   Device driver - MPR121 capactiive touch IC
- * @author  sam grove
+ * @author  Scott Campbell
  * @version 1.0
- * @see     http://cache.freescale.com/files/sensors/doc/data_sheet/MPR121.pdf
- *
- * Copyright (c) 2013
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
+******************************************************
+
+#include <mbed.h>
+#include "IS31FL3736.h"
+#include "MPR121.h"
+
+void onTouch(uint8_t pad)
+{
+  leds.setLED(0, pad, true);
+}
+
+void onRelease(uint8_t pad)
+{
+  leds.setLED(0, pad, false);
+}
+
+
+int main() {
+
+  leds.init();
+  leds.allLEDsOff();
+
+  thread.start(callback(&queue, &EventQueue::dispatch_forever));
+
+  tp1.init();
+  tp1.attachInteruptCallback(queue.event(callback(&tp1, &MPR121::handleTouch)));
+  tp1.attachCallbackTouched(callback(onTouch));
+  tp1.attachCallbackReleased(callback(onRelease));
+  tp1.enable();
+
+
+  while(1) {
+    if (tp1.wasTouched()) {
+      tp1.handleTouch();
+    }
+  }
+}
+
+******************************************************
+*/
 
 #ifndef __MPR121_H
 #define __MPR121_H
@@ -56,8 +81,8 @@ public:
     {
         ADDR_VSS = 0x5A, /*!< ADDR connected to VSS */
         ADDR_VDD,        /*!< ADDR connected to VDD */
-        ADDR_SCL,        /*!< ADDR connected to SDA */
-        ADDR_SDA         /*!< ADDR connected to SCL */
+        ADDR_SDA,        /*!< ADDR connected to SDA */
+        ADDR_SCL         /*!< ADDR connected to SCL */
     };
 
     MPR121(I2C *i2c_ptr, PinName irq_pin, MPR121_ADDR i2c_addr = ADDR_VSS) : irq(irq_pin) {
