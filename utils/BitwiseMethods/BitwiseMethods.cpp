@@ -16,6 +16,10 @@
  * combine two 8 bit values into 16 bit value --> https://stackoverflow.com/questions/11193918/combine-merge-two-bytes-into-one/11193978
 **/
 
+/** Set bit index of byte to 1
+ * @param byte target byte
+ * @param bit index
+*/ 
 int bitSet(int byte, int bit) {
   return (byte |= (1UL << bit));
 }
@@ -24,16 +28,30 @@ int bitClear(int byte, int bit) {
   return (byte &= ~(1UL << bit));
 }
 
-// clears all bits given a byte, 0 means don't clear that bit, 1 means clear that bit
-// ex. byte == 0b00001100 will cleat bits 2 and 3
+/** Clears all bits given a byte 
+ * 0 means don't clear that bit, 1 means clear that bit
+ * ex. byte == 0b00001100 will cleat bits 2 and 3
+*/
+
 int bitClearMany(int byte, int value) {
   return byte &= ~value;
 }
 
+/** write a given value to the selected bit index of a byte
+ * @param byte 8/16/32 bit integer value
+ * @param bit the bit / index to be set
+ * @param value value to set. Either 1 or 0
+ * @return bit status 1 or 0
+*/
 int bitWrite(int byte, int bit, int value) {
   return (value ? bitSet(byte, bit) : bitClear(byte, bit));
 }
 
+/** Return the status of a bit within a byte
+ * @param byte 8/16/32 bit integer value
+ * @param bit the bit / index to be read
+ * @return bit status 1 or 0
+*/ 
 int bitRead(int byte, int bit) {
   return (byte >> bit) & 0x01;
 }
@@ -42,7 +60,12 @@ int bitFlip(int byte, int bit) {
   return bitWrite(byte, bit, !bitRead(byte, bit));
 }
 
-int two8sTo16(int byte1, int byte2) {
+/**
+ * @brief merge two 8-bit values into a single 16-bit value
+ * @param byte1 bits 7..0
+ * @param byte2 bits 15..8
+ */ 
+uint16_t two8sTo16(int byte1, int byte2) {
   return (byte2 << 8) | byte1;
 }
 
