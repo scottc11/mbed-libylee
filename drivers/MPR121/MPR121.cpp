@@ -15,7 +15,7 @@ void MPR121::init(void)
     irq.mode(PullUp);
 
     // setup and registers - start with POR values (must be in stop mode)
-    MPR121::writeRegister(SRST, 0x63); // REG 0x80
+    MPR121::writeRegister(SRST, 0x63); // asserts soft reset. The soft reset does not effect the I2C module, but all others reset the same as POR.
 
     // Baseline Filtering Control Register (changes response sensitivity)
     MPR121::writeRegister(MHDR, 0x1);  //REG 0x2B
@@ -41,8 +41,8 @@ void MPR121::init(void)
     MPR121::writeRegister(DT_DR, 0x11); //REG 0x5B
 
     // Filter and Global CDC CDT Configuration (sample time, charge current)
-    MPR121::writeRegister(CDC_CONFIG, 0x10); //REG 0x5C default 10
-    MPR121::writeRegister(CDT_CONFIG, 0x20); //REG 0x5D default 24
+    MPR121::writeRegister(CDC_CONFIG, 0x10); //REG 0x5C default 0x10
+    MPR121::writeRegister(CDT_CONFIG, 0x20); //REG 0x5D default 0x24
 
     // Auto-Configuration Registers
     MPR121::writeRegister(AUTO_CFG0, 0x33); // REG 0x7B
@@ -56,6 +56,19 @@ void MPR121::init(void)
     MPR121::writeRegister(ECR, 0x8f);
 
     return;
+}
+
+/** NOTE: Not yet tested
+ * Check if the IC is successfully connected to I2C line by checking a known default register value
+ * NOTE: run this func before running init, as init may change the target registers value
+*/
+bool MPR121::connected() {
+    if (this->readRegister(CDT_CONFIG) == 0x24)
+    {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 /** 
@@ -98,7 +111,7 @@ void MPR121::disable(void)
 */
 uint16_t MPR121::handleTouch() {
     // Get the currently touched pads
-    currTouched = this->getTouched();
+    currTouched = this->readPads();
 
     if (currTouched != prevTouched)
     {
@@ -119,20 +132,22 @@ uint16_t MPR121::handleTouch() {
 
         // reset our state
         prevTouched = currTouched;
-        return currTouched;
     }
+    return currTouched;
 }
 
 /** Fetches currently touched pad data from MPR121 then clears class interupt
  * @return 16 bit value containing status of all 12 pads
 */
-uint16_t MPR121::getTouched()
+uint16_t MPR121::readPads()
 {
     uint16_t touched = readRegister16(ELE0_7_STAT);
     this->clearInterupt();
     return touched;
 }
 
+uint16_t MPR121::getCurrTouched() { return currTouched; }
+uint16_t MPR121::getPrevTouched() { return prevTouched; }
 
 /**
  * @brief The interrupt handler for the IRQ pin
