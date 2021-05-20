@@ -224,6 +224,9 @@ void SX1509::analogWrite(int pin, uint8_t value)
   this->setPWM(pin, value);
 }
 
+/**
+ * NOTE: For ANALOG_OUTPUT pins, a value of 0 will "start" the LED Driver, and a value of 1 will disable LED driver (I think)
+*/ 
 void SX1509::digitalWrite(int pin, int value) {
   int bank = getBank(pin);
   int pinPos = getPinPos(pin);
