@@ -19,7 +19,6 @@ public:
      */
     void writeRegister(char reg, char _data1, char _data2)
     {
-        uint8_t result = 0;
         char commands[3];
         commands[0] = reg;
         commands[1] = _data1;

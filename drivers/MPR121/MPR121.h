@@ -85,7 +85,7 @@ public:
         ADDR_SCL         /*!< ADDR connected to SCL */
     };
 
-    MPR121(I2C *i2c_ptr, PinName irq_pin, MPR121_ADDR i2c_addr = ADDR_VSS) : irq(irq_pin) {
+    MPR121(I2C *i2c_ptr, PinName irq_pin, MPR121_ADDR i2c_addr = ADDR_VSS) : irq(irq_pin) { // pull-up?
         address = i2c_addr << 1;
         i2c = i2c_ptr;
     }
@@ -93,9 +93,12 @@ public:
     void init(void);
     void enable(void);
     void disable(void);
+    bool connected();
 
     uint16_t handleTouch();
-    uint16_t getTouched();
+    uint16_t readPads();
+    uint16_t getCurrTouched();
+    uint16_t getPrevTouched();
     bool wasTouched();
     bool wasReleased();
 

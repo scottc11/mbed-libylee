@@ -4,7 +4,7 @@
 
 #include <mbed.h>
 
-#define MCP23017_DEFAULT_ADDR 0x40
+#define MCP23017_DEFAULT_ADDR 0x20
 #define MCP23017_PORTA 0x00
 #define MCP23017_PORTB 0x01
 
