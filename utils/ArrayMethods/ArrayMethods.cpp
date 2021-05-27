@@ -150,24 +150,3 @@ int arr_find_closest_float(float arr[], int n, float target)
     // Only single element left after search
     return arr[mid];
 }
-
-// Method to compare which one is the more close. 
-// We find the closest by taking the difference 
-// between the target and both values. It assumes 
-// that val2 is greater than val1 and target lies 
-// between these two.
-int getClosestInt(int val1, int val2, int target)
-{ 
-    if (target - val1 >= val2 - target) 
-        return val2; 
-    else
-        return val1; 
-}
-
-float getClosestFloat(float val1, float val2, float target)
-{
-    if (target - val1 >= val2 - target)
-        return val2;
-    else
-        return val1;
-}
