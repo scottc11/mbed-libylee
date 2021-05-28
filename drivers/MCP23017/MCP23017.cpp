@@ -15,7 +15,7 @@ void MCP23017::init(void) {
 	// port 0
 	i2cSend(REG_GPIO, 0, 0);
 
-	// port direction all input
+	// port direction all output
 	i2cSend(REG_IODIR, 0, 0);
 
 	// interupt off
