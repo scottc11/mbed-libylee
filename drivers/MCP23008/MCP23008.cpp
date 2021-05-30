@@ -2,8 +2,21 @@
 
 void MCP23008::init(void)
 {
-    this->setConfig(0b00100000); // disable register auto incremenet
-    this->setInterupt(0); // disable interupts
+    // this->setConfig(0b00100000); // disable register auto incremenet
+    // this->setInterupt(0); // disable interupts
+    char commands[2];
+    commands[0] = IOCON_REG;
+    commands[1] = 0b00010100;
+    i2c->write(address, commands, 2);
+    commands[0] = GPINTEN_REG;
+    commands[1] = 0x00;
+    i2c->write(address, commands, 2);
+    commands[0] = IODIR_REG;
+    commands[1] = 0x00;
+    i2c->write(address, commands, 2);
+    commands[0] = GPIO_REG;
+    commands[1] = 0b11111111;
+    i2c->write(address, commands, 2);
 }
 
 
@@ -71,7 +84,11 @@ void MCP23008::setInterupt(char value)
 **/
 void MCP23008::writePins(char value)
 {
-    writeRegister(GPIO_REG, value);
+    char buff[2];
+    buff[0] = GPIO_REG;
+    buff[1] = value;
+    i2c->write(address, buff, 2);
+    // writeRegister(GPIO_REG, value);
 }
 
 /**
