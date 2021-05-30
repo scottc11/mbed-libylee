@@ -2,21 +2,8 @@
 
 void MCP23008::init(void)
 {
-    // this->setConfig(0b00100000); // disable register auto incremenet
-    // this->setInterupt(0); // disable interupts
-    char commands[2];
-    commands[0] = IOCON_REG;
-    commands[1] = 0b00010100;
-    i2c->write(address, commands, 2);
-    commands[0] = GPINTEN_REG;
-    commands[1] = 0x00;
-    i2c->write(address, commands, 2);
-    commands[0] = IODIR_REG;
-    commands[1] = 0x00;
-    i2c->write(address, commands, 2);
-    commands[0] = GPIO_REG;
-    commands[1] = 0b11111111;
-    i2c->write(address, commands, 2);
+    // clear any stray interupts on startup/reset
+    this->readPins();
 }
 
 
@@ -32,7 +19,11 @@ void MCP23008::init(void)
 */
 void MCP23008::setConfig(char value)
 {
-    writeRegister(IOCON_REG, value);
+    char buff[2];
+    buff[0] = IOCON_REG;
+    buff[1] = value;
+    i2c->write(address, buff, 2);
+    // writeRegister(IOCON_REG, value);
 }
 
 
@@ -42,7 +33,11 @@ void MCP23008::setConfig(char value)
 */
 void MCP23008::setDirection(char value)
 {
-    writeRegister(IODIR_REG, value);
+    char buff[2];
+    buff[0] = IODIR_REG;
+    buff[1] = value;
+    i2c->write(address, buff, 2);
+    // writeRegister(IODIR_REG, value);
 }
 
 
@@ -52,7 +47,11 @@ void MCP23008::setDirection(char value)
 */
 void MCP23008::setPullUp(char value)
 {
-    writeRegister(GPPU_REG, value);
+    char buff[2];
+    buff[0] = GPPU_REG;
+    buff[1] = value;
+    i2c->write(address, buff, 2);
+    // writeRegister(GPPU_REG, value);
 }
 
 
@@ -62,7 +61,11 @@ void MCP23008::setPullUp(char value)
 */
 void MCP23008::setInputPolarity(char value)
 {
-    writeRegister(IPOL_REG, value);
+    char buff[2];
+    buff[0] = IPOL_REG;
+    buff[1] = value;
+    i2c->write(address, buff, 2);
+    // writeRegister(IPOL_REG, value);
 }
 
 
@@ -73,7 +76,11 @@ void MCP23008::setInputPolarity(char value)
 **/
 void MCP23008::setInterupt(char value)
 {
-    writeRegister(GPINTEN_REG, value);
+    char buff[2];
+    buff[0] = GPINTEN_REG;
+    buff[1] = value;
+    i2c->write(address, buff, 2);
+    // writeRegister(GPINTEN_REG, value);
 }
 
 
@@ -96,7 +103,11 @@ void MCP23008::writePins(char value)
 */ 
 char MCP23008::readPins()
 {
-    return readRegister(GPIO_REG);
+    char buff[2];
+    buff[0] = GPIO_REG;
+    i2c->write(address, buff, 1);
+    return i2c->read(address, buff, 1);
+    // return readRegister(GPIO_REG);
 }
 
 
