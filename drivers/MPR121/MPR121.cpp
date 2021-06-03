@@ -58,6 +58,13 @@ void MPR121::init(void)
     return;
 }
 
+void MPR121::poll() {
+    if (this->interuptDetected())
+    {
+        this->handleTouch();
+    }
+}
+
 /** NOTE: Not yet tested
  * Check if the IC is successfully connected to I2C line by checking a known default register value
  * NOTE: run this func before running init, as init may change the target registers value
@@ -166,7 +173,7 @@ void MPR121::irq_handler(void) {
     return;
 }
 
-bool MPR121::wasTouched() {
+bool MPR121::interuptDetected() {
     return interupt;
 }
 
