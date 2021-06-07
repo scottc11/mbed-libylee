@@ -13,6 +13,11 @@ int invertIntInRange(int min, int max, int num)
     return (max + min) - num;
 }
 
+int scaleIntToRange(int input, int minInput, int maxInput, int minOutput, int maxOutput)
+{
+    return ( (maxOutput - minOutput) / (maxInput - minInput) ) * (input - minInput);
+}
+
 /**
  * Compares two integers to a target integer and returns the closest. 
  * We find the closest by taking the difference between the target and both values. 
