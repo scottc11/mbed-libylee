@@ -25,9 +25,9 @@ public:
     CHAN_C = 0x2,
     CHAN_D = 0x3,
   };
-
-  DigitalOut select;
+  
   SPI spi;
+  DigitalOut select;
   int baseline = 485;
   int ceiling = 64741;
 
