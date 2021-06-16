@@ -41,6 +41,10 @@ void MCP23017::setPullUp(char _port, char _value) {
 	i2cSend(REG_GPPU + _port, _value);
 }
 
+/**
+ * This register allows the user to configure the polarity on the corresponding GPIO port bits.
+ * If a bit is set, the corresponding GPIO register bit will reflect the inverted value on the pin.
+*/
 void MCP23017::setInputPolarity(char _port, char _value) {
 	i2cSend(REG_IPOL + _port, _value);
 }
