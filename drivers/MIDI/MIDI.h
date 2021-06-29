@@ -15,7 +15,7 @@ const int MIDI_MAP[128] = {
 
 class MIDI {
   private:
-    RawSerial serial;
+    BufferedSerial serial;
 
   public:
     MIDI(PinName tx, PinName rx) : serial(tx, rx, MIDI_BAUD) {}
