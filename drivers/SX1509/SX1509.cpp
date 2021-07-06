@@ -287,6 +287,26 @@ void SX1509::setDirection(int pin, int inOut)
   this->i2cWrite(reg, bitWrite(this->i2cRead(reg), pinPos, inOut));
 }
 
+/**
+Enables open drain operation for each [output-configured] IO
+@param: value 1 or 0
+0 : Regular push-pull operation
+1 : Open drain operation
+*/
+void SX1509::setOpenDrain(int pin, int value)
+{
+  if (value > 1) {
+    value = 1;
+  } else {
+    value = 0;
+  }
+  int bank = getBank(pin);
+  int pinPos = getPinPos(pin);
+  int reg = REG_OPEN_DRAIN_B + bank;
+  this->i2cWrite(reg, bitWrite(this->i2cRead(reg), pinPos, value));
+}
+
+
 void SX1509::enablePullup(int pin)
 {
   int bank = getBank(pin);
