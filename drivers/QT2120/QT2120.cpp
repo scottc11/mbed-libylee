@@ -11,7 +11,7 @@ void QT2120::init() {
     return;
   }
 
-  int status = readRegister(DETECTION_STATUS);
+  // int status = readRegister(DETECTION_STATUS);
 
   setDetectionIntegrator(2);
   setDetectThreshold(5);

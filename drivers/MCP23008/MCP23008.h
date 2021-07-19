@@ -12,14 +12,13 @@
 class MCP23008 : public OK_I2C {
 	
 public:
-    MCP23008(I2C *_i2c, char _addr = MCP23008_DEFAULT_ADDR)
+    MCP23008(I2C *_i2c, char _addr)
     {
         address = _addr << 1;
 		i2c = _i2c;
     };
 
     I2C * i2c;
-	char address;
 
 	void init(void);
 	void setConfig(char value);

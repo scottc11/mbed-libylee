@@ -91,6 +91,7 @@ public:
     }
 
     void init(void);
+    void poll();
     void enable(void);
     void disable(void);
     bool connected();
@@ -99,8 +100,7 @@ public:
     uint16_t readPads();
     uint16_t getCurrTouched();
     uint16_t getPrevTouched();
-    bool wasTouched();
-    bool wasReleased();
+    bool interuptDetected();
 
     void clearInterupt();
     void attachInteruptCallback(Callback<void()> func);
