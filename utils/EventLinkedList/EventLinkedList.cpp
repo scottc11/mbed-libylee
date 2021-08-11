@@ -46,7 +46,7 @@ void EventLinkedList::clearEventList() {
 void EventLinkedList::createEvent(int position, int noteIndex) {
   newEvent = new EventNode;
   newEvent->noteIndex = noteIndex;
-  newEvent->startPos = quantize(timeQuantizationMode, position, currStep, numLoopSteps, PPQN);
+  newEvent->startPos = position;
   newEvent->triggered = false;
   newEvent->next = NULL;
 }
@@ -55,7 +55,7 @@ void EventLinkedList::createEvent(int position, int noteIndex) {
 void EventLinkedList::createChordEvent(int position, uint8_t notes) {
   newEvent = new EventNode;
   newEvent->activeNotes = notes;
-  newEvent->startPos = quantize(timeQuantizationMode, position, currStep, numLoopSteps, PPQN);
+  newEvent->startPos = position;
   newEvent->triggered = false;
   newEvent->next = NULL;
 }
