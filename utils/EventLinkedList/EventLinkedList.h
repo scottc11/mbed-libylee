@@ -1,7 +1,7 @@
 #ifndef __EVENT_LINKED_LIST_H
 #define __EVENT_LINKED_LIST_H
 
-#include "QuantizeMethods.h"
+#include <cstddef>
 #include "BitwiseMethods.h"
 
 #define PPQN  24
@@ -23,14 +23,12 @@ public:
     head = NULL;
     newEvent = NULL;
     queuedEvent = NULL;
-    timeQuantizationMode = QUANT_NONE;
   }
 
   EventNode* head;
   EventNode* newEvent;                // to be created and deleted everytime a user presses event create button
   EventNode* queuedEvent;             // the currently active / next / ensuing / succeeding event
 
-  QuantizeMode timeQuantizationMode;
   bool enableLoop = false;            // "Event Triggering Loop" -> This will prevent looped events from triggering if a new event is currently being created
   volatile int numLoopSteps;
   volatile int currStep;              // the current 'step' of the loop (lowest value == 1)

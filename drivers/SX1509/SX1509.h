@@ -80,6 +80,7 @@ public:
   void setInputDebounce(int pin, bool debounce);
   void setDebounceTime(int value);
   void setInterupt(int pin, bool willNotInterupt, InteruptDirection sense);
+  void setOpenDrain(int pin, int value);
   
   void enablePullup(int pin);
   void disablePullup(int pin);
