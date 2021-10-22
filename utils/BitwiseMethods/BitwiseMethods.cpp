@@ -77,3 +77,12 @@ void byte32to16(uint16_t *bytes, uint32_t byte32) {
   bytes[0] = (byte32 >> 16) & 0xffff;
   bytes[1] = byte32 & 0xffff;
 }
+
+/**
+ * @brief perform a 12-bit to 16-bit conversion
+ * @param value 12-bit value to be converted
+ * @return 16-bit value
+*/
+uint16_t convert12to16(int value) {
+  return ((value << 4) & (uint16_t)0xFFF0) | ((value >> 8) & (uint16_t)0x000F);
+}
