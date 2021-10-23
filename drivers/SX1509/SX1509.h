@@ -2,8 +2,9 @@
 #ifndef _SX1509_H_
 #define _SX1509_H_
 
-#include <mbed.h>
 #include "BitwiseMethods.h"
+#include <stdint.h>
+#include "I2C.h"
 
 #define SX1509_ADDR  0x3E
 // 01 | 0x3F | (0111111)
@@ -94,7 +95,7 @@ public:
 private:
 
 	inline void i2cWrite(char _command, char _data1, char _data2){
-		char commands[3];
+		uint8_t commands[3];
 		commands[0] = _command;
 		commands[1] = _data1;
 		commands[2] = _data2;
@@ -103,16 +104,16 @@ private:
 	}
 	
 	inline void i2cWrite(char _command, char _data1){
-		char commands[2];
-		commands[0] = _command;
+    uint8_t commands[2];
+    commands[0] = _command;
 		commands[1] = _data1;
 		
 		i2c->write(address, commands, 2);
 	}
 	
 	inline char i2cRead(char _command){
-		char commands[2];
-		commands[0] = _command;
+    uint8_t commands[2];
+    commands[0] = _command;
 		i2c->write(address, commands, 1);
 		//return (char)i2c->read(0);
 		i2c->read(address,commands,1);
