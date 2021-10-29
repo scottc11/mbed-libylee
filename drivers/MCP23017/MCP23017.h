@@ -2,7 +2,7 @@
 #ifndef _MCP23017_H_
 #define _MCP23017_H_
 
-#include <mbed.h>
+#include "I2C.h"
 
 #define MCP23017_DEFAULT_ADDR 0x20
 #define MCP23017_PORTA 0x00
@@ -45,7 +45,7 @@ class MCP23017 {
 private:
 
 	inline void i2cSend(char _command, char _data1, char _data2){
-		char commands[3];
+		uint8_t commands[3];
 		commands[0] = _command;
 		commands[1] = _data1;
 		commands[2] = _data2;
@@ -54,7 +54,7 @@ private:
 	}
 	
 	inline void i2cSend(char _command, char _data1){
-		char commands[2];
+		uint8_t commands[2];
 		commands[0] = _command;
 		commands[1] = _data1;
 		
@@ -62,7 +62,7 @@ private:
 	}
 	
 	inline char i2cRead(char _command){
-		char commands[2];
+		uint8_t commands[2];
 		commands[0] = _command;
 		i2c->write(address, commands, 1);
 		//return (char)i2c->read(0);

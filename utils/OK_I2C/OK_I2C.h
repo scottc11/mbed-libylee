@@ -1,8 +1,8 @@
 #ifndef __OK_I2C_H
 #define __OK_I2C_H
 
-#include <mbed.h>
-#include <BitwiseMethods.h>
+#include "common.h"
+#include "I2C.h"
 
 class OK_I2C {
 public:
@@ -19,7 +19,7 @@ public:
      */
     void writeRegister(char reg, char _data1, char _data2)
     {
-        char commands[3];
+        uint8_t commands[3];
         commands[0] = reg;
         commands[1] = _data1;
         commands[2] = _data2;
@@ -29,7 +29,7 @@ public:
 
     void writeRegister(char reg, char _data1)
     {
-        char commands[2];
+        uint8_t commands[2];
         commands[0] = reg;
         commands[1] = _data1;
 
@@ -42,7 +42,7 @@ public:
      */
     char readRegister(char reg)
     {
-        char buffer[2];
+        uint8_t buffer[2];
         buffer[0] = reg;
         i2c->write(address, buffer, 1);
         i2c->read(address, buffer, 1);
@@ -50,7 +50,7 @@ public:
     }
 
     uint16_t readRegister16(char reg) {
-        char buffer[2];
+        uint8_t buffer[2];
         buffer[0] = reg;
         i2c->write(address, buffer, 1, true);
         i2c->read(address, buffer, 2);
