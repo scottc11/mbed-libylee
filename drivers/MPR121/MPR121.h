@@ -48,15 +48,17 @@ int main() {
 #ifndef __MPR121_H
 #define __MPR121_H
 
-#include <mbed.h>
-#include <OK_I2C.h>
-#include <BitwiseMethods.h>
+#include "common.h"
+#include "OK_I2C.h"
+#include "I2C.h"
+#include "Callback.h"
+#include "InterruptIn.h"
 
 /**
  *  @class MPR121
  *  @brief API for the MPR121 capacitive touch IC
  */
-class MPR121 : public OK_I2C {
+class MPR121 {
 private:
     InterruptIn irq;
     volatile uint16_t _button;
@@ -85,7 +87,7 @@ public:
         ADDR_SCL         /*!< ADDR connected to SCL */
     };
 
-    MPR121(I2C *i2c_ptr, PinName irq_pin, MPR121_ADDR i2c_addr = ADDR_VSS) : irq(irq_pin) { // pull-up?
+    MPR121(I2C *i2c_ptr, PinName irq_pin, MPR121_ADDR i2c_addr = ADDR_VSS) : irq(irq_pin, PullUp) { // pull-up?
         address = i2c_addr << 1;
         i2c = i2c_ptr;
     }
@@ -106,7 +108,55 @@ public:
     void attachInteruptCallback(Callback<void()> func);
     void attachCallbackTouched(Callback<void(uint8_t pad)> func);
     void attachCallbackReleased(Callback<void(uint8_t pad)> func);
+private:
+  char address; // Note: The Arm Mbed API uses 8 bit addresses, so make sure to left-shift 7 bit addresses by 1 bit before passing them.
+  I2C *i2c;     // use an #ifdef macro here to determin which underlying framework I2C class should be used
 
+  /** Write to a register
+     *  Note: most writes are only valid in stop mode
+     *  @param reg - The register to be written
+     *  @param data - The data to be written
+     */
+  void writeRegister(char reg, char _data1, char _data2)
+  {
+    uint8_t commands[3];
+    commands[0] = reg;
+    commands[1] = _data1;
+    commands[2] = _data2;
+
+    i2c->write(address, commands, 3);
+  }
+
+  void writeRegister(char reg, char _data1)
+  {
+    uint8_t commands[2];
+    commands[0] = reg;
+    commands[1] = _data1;
+
+    i2c->write(address, commands, 2);
+  }
+
+  /** Read from a register
+     *  @param reg - The register to read from
+     *  @return The register contents
+     */
+  char readRegister(char reg)
+  {
+    uint8_t buffer[2];
+    buffer[0] = reg;
+    i2c->write(address, buffer, 1);
+    i2c->read(address, buffer, 1);
+    return buffer[0];
+  }
+
+  uint16_t readRegister16(char reg)
+  {
+    uint8_t buffer[2];
+    buffer[0] = reg;
+    i2c->write(address, buffer, 1, true);
+    i2c->read(address, buffer, 2);
+    return two8sTo16(buffer[0], buffer[1]);
+  }
     /**
      *  @enum MPR121_REGISTER
      *  @brief The device register map

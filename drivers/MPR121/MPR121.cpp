@@ -1,18 +1,13 @@
 
 
 #include "MPR121.h"
-#include "mbed_debug.h"
 
 /**
  * Clear state variables and initilize the dependant objects
 */
 void MPR121::init(void)
 {
-    // set the i2c speed
-    i2c->frequency(400000);
-    
-    // irq is open-collector and active-low
-    irq.mode(PullUp);
+    irq.fall(callback(this, &MPR121::irq_handler)); // and attach the interrupt handler
 
     // setup and registers - start with POR values (must be in stop mode)
     MPR121::writeRegister(SRST, 0x63); // asserts soft reset. The soft reset does not effect the I2C module, but all others reset the same as POR.
@@ -87,7 +82,6 @@ void MPR121::enable(void)
     _button_has_changed = 0;
     // enable the 12 electrodes - allow disable to put device into lower current consumption mode
     writeRegister(ECR, 0x8f);
-    irq.fall(callback(this, &MPR121::irq_handler)); // and attach the interrupt handler
 
     return;
 }
@@ -145,11 +139,14 @@ uint16_t MPR121::handleTouch() {
 
 /** Fetches currently touched pad data from MPR121 then clears class interupt
  * @return 16 bit value containing status of all 12 pads
+ * NOTE: You must clear interupt flag before reading the IC, otherwise the callback function would 
+ * execute and set interupt to true, which would then get immediately cleared by clearInterupt(). 
+ * So the POLL function would not know to read the IC again.
 */
 uint16_t MPR121::readPads()
 {
+    this->clearInterupt(); 
     uint16_t touched = readRegister16(ELE0_7_STAT);
-    this->clearInterupt();
     return touched;
 }
 
@@ -159,12 +156,14 @@ uint16_t MPR121::getPrevTouched() { return prevTouched; }
 /**
  * @brief The interrupt handler for the IRQ pin
  * if callback present, executes the callback, else, sets an interupt flag
+ * 
+ * NOTE: handle event queue here
+ * if you call handleTouch() in this method, you would be executing unsafe IRQ code (i2c comms), so
+ * you must use a thread/event queue to execute the code later.
+ * Adding handleTouch to the queue could possibly be done using an additional callback function, 
+ * as to build a more reusable MPR121 class
 */
 void MPR121::irq_handler(void) {
-    // handle event queue here
-    // if you call handleTouch() in this method, you would be executing unsafe IRQ code (i2c comms), so
-    // you must use a thread/event queue to execute the code later.
-    // Adding handleTouch to the queue could possibly be done using an additional callback function, as to build a more reusable MPR121 class
     if (interuptCallback) {
         interuptCallback();
     } else {
