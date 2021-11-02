@@ -7,8 +7,7 @@
  * Pin 11 --> MOSI
 */
 
-
-#include <mbed.h>
+#include "SPI.h"
 
 #define DAC8554_BUFFER_WRITE  0b00000000
 #define DAC8554_SINGLE_WRITE  0b00010000
@@ -27,17 +26,19 @@ public:
   };
   
   SPI spi;
-  DigitalOut select;
   int baseline = 485;
   int ceiling = 64741;
 
-  DAC8554(PinName spiMosi, PinName spiSck, PinName selectPin) : spi(spiMosi, NC, spiSck), select(selectPin) {
-    select.write(1);
-    spi.frequency(25000000); // 25MHz
+  /**
+   * NOTE: Texas Instruments requires special SPI formatting, most commonly known as SPI Mode #1
+  */
+  DAC8554(PinName spiMosi, PinName spiSck, PinName selectPin) : spi(spiMosi, NC, spiSck, 1, selectPin)
+  {
+    // spi.frequency(25000000); // 25MHz
   }
   
   void init() {
-    spi.format(8, 1);  // texas instruments requires special serial formatting
+    spi.init();
   };
   
   // 485 and 64741
@@ -58,11 +59,8 @@ private:
     uint8_t byte1 = config;
     uint8_t byte2 = (data >> 8) & 0xFF;
     uint8_t byte3 = data & 0xFF;
-    select.write(0);
-    spi.write(byte1);
-    spi.write(byte2);
-    spi.write(byte3);
-    select.write(1);
+    uint8_t buffer[3] = { byte1, byte2, byte3 };
+    spi.write(buffer, 3);
   }
   
   enum Registers {
