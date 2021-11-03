@@ -1,3 +1,19 @@
+/**
+ * Example: All pins as GPIO Inputs
+
+mcp.init();
+mcp.setDirection(MCP23017_PORTA, 0xff);
+mcp.setDirection(MCP23017_PORTB, 0b11111111);
+mcp.setInterupt(MCP23017_PORTA, 0xff);
+mcp.setInterupt(MCP23017_PORTB, 0b11111111);
+mcp.setPullUp(MCP23017_PORTA, 0xff);
+mcp.setPullUp(MCP23017_PORTB, 0b01111111);
+mcp.setInputPolarity(MCP23017_PORTA, 0xff);
+mcp.setInputPolarity(MCP23017_PORTB, 0b11111111);
+
+mcp.digitalReadAB(); // clear any stray interupts after configuration
+
+*/
 
 #ifndef _MCP23017_H_
 #define _MCP23017_H_
@@ -8,9 +24,11 @@
 #define MCP23017_PORTA 0x00
 #define MCP23017_PORTB 0x01
 
-// supports I2C speeds 400kHz, 1.7MHz
-// note: This class assumes the use of bank = 0 for register addresses. Reference the datasheet.
-
+/**
+ * supports I2C speeds 400kHz, 1.7MHz 
+ * NOTE: This class assumes the use of bank = 0 for register addresses. Reference the datasheet.
+ * NOTE: 
+*/
 class MCP23017 {
 	
 	public:
