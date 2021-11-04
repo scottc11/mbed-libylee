@@ -18,7 +18,7 @@ class DAC8554 {
 
 public:
   
-  enum Channels {
+  enum Channel {
     CHAN_A = 0x0,
     CHAN_B = 0x1,
     CHAN_C = 0x2,
@@ -42,7 +42,7 @@ public:
   };
   
   // 485 and 64741
-  void write(DAC8554::Channels chan, uint16_t value, uint8_t mode = DAC8554_SINGLE_WRITE) {
+  void write(DAC8554::Channel chan, uint16_t value, uint8_t mode = DAC8554_SINGLE_WRITE) {
     uint8_t config = mode | (chan << 1);
     this->writeRegister(config, value);
   };
