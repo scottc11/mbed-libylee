@@ -31,18 +31,26 @@ void MCP23017::setConfig(char _value) {
 	i2cSend(REG_IOCON, _value);
 }
 
+/**
+ * @brief Controls the direction of the data I/O.
+ * When a bit is set, the corresponding pin becomes an input. When a bit is clear, the corresponding pin becomes an output.
+*/
 void MCP23017::setDirection(char _port, char _value) {
 	// io.setDirection(MCP23017_PORTA, 0xFF);    // set all of the PORTA pins to input
 	// io.setDirection(MCP23017_PORTB, 0x00);    // sets all of the PORTB pins to output
 	i2cSend(REG_IODIR + _port, _value);
 }
 
+/**
+ * @brief The GPPU register controls the pull-up resistors for the port pins. 
+ * If a bit is set and the corresponding pin is configured as an input, the corresponding port pin is internally pulled up with a 100 k􏰁 resistor.
+*/
 void MCP23017::setPullUp(char _port, char _value) {
 	i2cSend(REG_GPPU + _port, _value);
 }
 
 /**
- * This register allows the user to configure the polarity on the corresponding GPIO port bits.
+ * @brief This register allows the user to configure the polarity on the corresponding GPIO port bits.
  * If a bit is set, the corresponding GPIO register bit will reflect the inverted value on the pin.
 */
 void MCP23017::setInputPolarity(char _port, char _value) {
