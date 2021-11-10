@@ -2,7 +2,6 @@
 #define __IS31FL3739_H
 
 #include "common.h"
-#include "OK_I2C.h"
 #include "I2C.h"
 
 // I2C Pull-Ups: 4.7kΩ @ 400kHz, 2kΩ @ 1MHz
@@ -16,7 +15,7 @@ const static int IS31FL3739_PWM_MAP_4x16[64] = {
     0x76, 0x66, 0x56, 0x46, 0x36, 0x26, 0x16, 0x06, 0x80, 0x70, 0x60, 0x50, 0x40, 0x30, 0x20, 0x10
 };
 
-class IS31FL3739 : public OK_I2C {
+class IS31FL3739 {
 
 public:
     IS31FL3739(I2C *i2c_ptr, uint8_t addr = IS31FL3739_ADDR)
@@ -35,6 +34,25 @@ public:
     void setScale(uint8_t val);
 
 private:
+    void writeRegister(char reg, char _data1, char _data2)
+    {
+        uint8_t commands[3];
+        commands[0] = reg;
+        commands[1] = _data1;
+        commands[2] = _data2;
+
+        i2c->write(address, commands, 3);
+    }
+
+    void writeRegister(char reg, char _data1)
+    {
+        uint8_t commands[2];
+        commands[0] = reg;
+        commands[1] = _data1;
+
+        i2c->write(address, commands, 2);
+    }
+
     enum Registers
     {
         CONFIG_REG = 0xA0,
