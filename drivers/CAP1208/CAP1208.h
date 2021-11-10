@@ -1,7 +1,7 @@
 #ifndef __CAP1208_H
 #define __CAP1208_H
 
-#include <mbed.h>
+#include "I2C.h"
 #include "TCA9548A.h"
 
 #define CAP1208_I2C_ADDR     0x50
@@ -52,8 +52,8 @@ private:
   void i2cWrite(char reg, char data) {
     
     if (useMux) { mux->enableChan(muxChannel); }
-    
-    char buffer[2];
+
+    uint8_t buffer[2];
     buffer[0] = reg;
     buffer[1] = data;
     i2c->write(CAP1208_I2C_ADDR, buffer, 2);
@@ -63,8 +63,8 @@ private:
     
     if (useMux) { mux->enableChan(muxChannel); }
 
-    char command[1];
-    char buffer[1];
+    uint8_t command[1];
+    uint8_t buffer[1];
     command[0] = reg;
     i2c->write(CAP1208_I2C_ADDR, command, 1, true);
     i2c->read(CAP1208_I2C_ADDR, buffer, 1);
