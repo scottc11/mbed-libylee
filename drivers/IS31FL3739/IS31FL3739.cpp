@@ -30,8 +30,11 @@ void IS31FL3739::setPWM(uint8_t led, uint8_t pwm)
 }
 
 /**
- * Set the global current
-*/
+ * @brief Set the global current (between 0..65 steps)
+ * The Global Current Control Register modulates all CSy (y=1~8) DC current which is noted as IOUT in 65 steps, 
+ * maximum GCC is “100 0000’, if GCC> “1000000”, GCC= “100 0000”.
+ * @param val 
+ */
 void IS31FL3739::setGlobalCurrent(uint8_t val)
 {
     writeRegister(CURR_CTRL_REG, val);

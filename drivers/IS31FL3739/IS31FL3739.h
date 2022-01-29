@@ -55,11 +55,11 @@ private:
 
     enum Registers
     {
-        CONFIG_REG = 0xA0,
-        CURR_CTRL_REG = 0xA1,
-        PWM_REG = 0x03,
-        SCALING_REG = 0x92,
-        PWM_FREQ_REG = 0xB2,
+        CONFIG_REG = 0xA0,    // Configure the operation mode
+        CURR_CTRL_REG = 0xA1, // Set the global current
+        PWM_REG = 0x03,       // Set PWM value for LED
+        SCALING_REG = 0x92,   // Control the DC output current of each CSy
+        PWM_FREQ_REG = 0xB2,  // Set the PWM frequency
         RESET_REG = 0xCF
     };
 };
