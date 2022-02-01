@@ -79,6 +79,26 @@ void byte32to16(uint16_t *bytes, uint32_t byte32) {
 }
 
 /**
+ * @brief returns the first half of a 32-bit value
+ * 
+ * @param value 
+ * @return uint16_t 
+ */
+uint16_t bitwise_first_16_of_32(uint32_t value) {
+  return value & 0xffff;
+}
+
+/**
+ * @brief returns the last half of a 32-bit value
+ *
+ * @param value
+ * @return uint16_t
+ */
+uint16_t bitwise_last_16_of_32(uint32_t value) {
+  return (value >> 16) & 0xffff;
+}
+
+/**
  * @brief perform a 12-bit to 16-bit conversion
  * @param value 12-bit value to be converted
  * @return 16-bit value
