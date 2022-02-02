@@ -164,8 +164,8 @@ uint16_t MPR121::getPrevTouched() { return prevTouched; }
  * as to build a more reusable MPR121 class
 */
 void MPR121::irq_handler(void) {
-    if (interuptCallback) {
-        interuptCallback();
+    if (interruptCallback) {
+        interruptCallback();
     } else {
         interupt = true;
     }
@@ -185,8 +185,8 @@ void MPR121::clearInterupt() {
  * @brief Attach a callback to be invoked when an interupt is detected. MUST be ISR safe
  * @param func MBED Callback function
 */
-void MPR121::attachInteruptCallback(Callback<void()> func) {
-    interuptCallback = func;
+void MPR121::attachinterruptCallback(Callback<void()> func) {
+    interruptCallback = func;
 }
 
 /**

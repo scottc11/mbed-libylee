@@ -29,7 +29,7 @@ int main() {
   thread.start(callback(&queue, &EventQueue::dispatch_forever));
 
   tp1.init();
-  tp1.attachInteruptCallback(queue.event(callback(&tp1, &MPR121::handleTouch)));
+  tp1.attachinterruptCallback(queue.event(callback(&tp1, &MPR121::handleTouch)));
   tp1.attachCallbackTouched(callback(onTouch));
   tp1.attachCallbackReleased(callback(onRelease));
   tp1.enable();
@@ -59,21 +59,6 @@ int main() {
  *  @brief API for the MPR121 capacitive touch IC
  */
 class MPR121 {
-private:
-    InterruptIn irq;
-    volatile uint16_t _button;
-    volatile uint32_t _button_has_changed;
-    
-    volatile bool interupt {false};
-    uint16_t currTouched {0};
-    uint16_t prevTouched {0};
-    
-    Callback<void(uint8_t pad)> touchedCallback;
-    Callback<void(uint8_t pad)> releasedCallback;
-    Callback<void()> interuptCallback;
-
-    void irq_handler(void);
-
 public:
     /**
      *  @enum MPR121_ADDR
@@ -105,12 +90,27 @@ public:
     bool interuptDetected();
 
     void clearInterupt();
-    void attachInteruptCallback(Callback<void()> func);
+    void attachinterruptCallback(Callback<void()> func);
     void attachCallbackTouched(Callback<void(uint8_t pad)> func);
     void attachCallbackReleased(Callback<void(uint8_t pad)> func);
+
 private:
   char address; // Note: The Arm Mbed API uses 8 bit addresses, so make sure to left-shift 7 bit addresses by 1 bit before passing them.
   I2C *i2c;     // use an #ifdef macro here to determin which underlying framework I2C class should be used
+
+  InterruptIn irq;
+  volatile uint16_t _button;
+  volatile uint32_t _button_has_changed;
+
+  volatile bool interupt{false};
+  uint16_t currTouched{0};
+  uint16_t prevTouched{0};
+
+  Callback<void(uint8_t pad)> touchedCallback;
+  Callback<void(uint8_t pad)> releasedCallback;
+  Callback<void()> interruptCallback;
+
+  void irq_handler(void);
 
   /** Write to a register
      *  Note: most writes are only valid in stop mode
