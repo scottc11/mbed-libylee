@@ -9,7 +9,7 @@ float getClosestFloat(float val1, float val2, float target);
 template <class T>
 T map_num_in_range(T input, T minInput, T maxInput, T minOutput, T maxOutput)
 {
-    return ((float)(maxOutput - minOutput) / (maxInput - minInput)) * (input - minInput);
+    return ((maxOutput - minOutput) * (input - minInput)) / (maxInput - minInput) + minOutput;
 }
 
 #endif
