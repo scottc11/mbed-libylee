@@ -54,7 +54,7 @@ void MPR121::init(void)
 }
 
 void MPR121::poll() {
-    if (this->interuptDetected())
+    if (this->interruptDetected())
     {
         this->handleTouch();
     }
@@ -105,7 +105,7 @@ void MPR121::disable(void)
 }
 
 /**
- * @brief This method gets called everytime the MPR121 delivers an interupt.
+ * @brief This method gets called everytime the MPR121 delivers an interrupt.
  * Calls both touch and release callbacks with the given pad that was touched.
  * 
  * @return the currently touched (or not touched) pads
@@ -137,15 +137,15 @@ uint16_t MPR121::handleTouch() {
     return currTouched;
 }
 
-/** Fetches currently touched pad data from MPR121 then clears class interupt
+/** Fetches currently touched pad data from MPR121 then clears class interrupt
  * @return 16 bit value containing status of all 12 pads
- * NOTE: You must clear interupt flag before reading the IC, otherwise the callback function would 
- * execute and set interupt to true, which would then get immediately cleared by clearInterupt(). 
+ * NOTE: You must clear interrupt flag before reading the IC, otherwise the callback function would 
+ * execute and set interrupt to true, which would then get immediately cleared by clearInterrupt(). 
  * So the POLL function would not know to read the IC again.
 */
 uint16_t MPR121::readPads()
 {
-    this->clearInterupt(); 
+    this->clearInterrupt(); 
     uint16_t touched = readRegister16(ELE0_7_STAT);
     return touched;
 }
@@ -155,7 +155,7 @@ uint16_t MPR121::getPrevTouched() { return prevTouched; }
 
 /**
  * @brief The interrupt handler for the IRQ pin
- * if callback present, executes the callback, else, sets an interupt flag
+ * if callback present, executes the callback, else, sets an interrupt flag
  * 
  * NOTE: handle event queue here
  * if you call handleTouch() in this method, you would be executing unsafe IRQ code (i2c comms), so
@@ -167,25 +167,25 @@ void MPR121::irq_handler(void) {
     if (interruptCallback) {
         interruptCallback();
     } else {
-        interupt = true;
+        interrupt = true;
     }
     return;
 }
 
-bool MPR121::interuptDetected() {
-    return interupt;
+bool MPR121::interruptDetected() {
+    return interrupt;
 }
 
-void MPR121::clearInterupt() {
-    interupt = false;
+void MPR121::clearInterrupt() {
+    interrupt = false;
     return;
 }
 
 /**
- * @brief Attach a callback to be invoked when an interupt is detected. MUST be ISR safe
+ * @brief Attach a callback to be invoked when an interrupt is detected. MUST be ISR safe
  * @param func MBED Callback function
 */
-void MPR121::attachinterruptCallback(Callback<void()> func) {
+void MPR121::attachInterruptCallback(Callback<void()> func) {
     interruptCallback = func;
 }
 

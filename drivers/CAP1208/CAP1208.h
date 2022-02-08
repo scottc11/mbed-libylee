@@ -41,7 +41,7 @@ class CAP1208 {
   uint8_t getControlStatus();
   uint8_t getGeneralStatus();
   void calibrate();
-  void clearInterupt();
+  void clearInterrupt();
   uint8_t touched();
   bool padIsTouched(int pad, int currTouched, int prevTouched);
   bool padWasTouched(int pad, int currTouched, int prevTouched);

@@ -17,7 +17,7 @@ void CAP1208::init() {
   i2cWrite(REPEAT_RATE_ENABLE_REG, 0x00);   // disable repeat rate for all channels
   i2cWrite(CONF_2_REG, 0x60);               // disable BLK_PWR_CTRL power saving feature
 
-  clearInterupt();
+  clearInterrupt();
 }
 
 void CAP1208::disableInterupts() {
@@ -46,13 +46,13 @@ void CAP1208::calibrate() {
  * 
  * for some reason we have to "clear" the INT bit everytime we read the sensors...
 */
-void CAP1208::clearInterupt() {
+void CAP1208::clearInterrupt() {
   i2cWrite(MAIN_CTRL_REG, MAIN_CTRL_REG & ~0x01);
 }
 
 // read input status of CAP1208
 uint8_t CAP1208::touched() {
-  this->clearInterupt();
+  this->clearInterrupt();
   uint8_t data = i2cRead(INPUT_STATUS_REG);
   return data;
 }

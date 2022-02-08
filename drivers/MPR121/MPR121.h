@@ -29,7 +29,7 @@ int main() {
   thread.start(callback(&queue, &EventQueue::dispatch_forever));
 
   tp1.init();
-  tp1.attachinterruptCallback(queue.event(callback(&tp1, &MPR121::handleTouch)));
+  tp1.attachInterruptCallback(queue.event(callback(&tp1, &MPR121::handleTouch)));
   tp1.attachCallbackTouched(callback(onTouch));
   tp1.attachCallbackReleased(callback(onRelease));
   tp1.enable();
@@ -87,10 +87,10 @@ public:
     uint16_t readPads();
     uint16_t getCurrTouched();
     uint16_t getPrevTouched();
-    bool interuptDetected();
+    bool interruptDetected();
 
-    void clearInterupt();
-    void attachinterruptCallback(Callback<void()> func);
+    void clearInterrupt();
+    void attachInterruptCallback(Callback<void()> func);
     void attachCallbackTouched(Callback<void(uint8_t pad)> func);
     void attachCallbackReleased(Callback<void(uint8_t pad)> func);
 
@@ -102,7 +102,7 @@ private:
   volatile uint16_t _button;
   volatile uint32_t _button_has_changed;
 
-  volatile bool interupt{false};
+  volatile bool interrupt{false};
   uint16_t currTouched{0};
   uint16_t prevTouched{0};
 
