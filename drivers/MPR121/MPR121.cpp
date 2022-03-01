@@ -154,6 +154,21 @@ uint16_t MPR121::getCurrTouched() { return currTouched; }
 uint16_t MPR121::getPrevTouched() { return prevTouched; }
 
 /**
+ * @brief returns true if any of the pads are being touched
+ * 
+ * @return true 
+ * @return false 
+ */
+bool MPR121::padIsTouched()
+{
+    if (this->getCurrTouched() != 0x00) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+/**
  * @brief The interrupt handler for the IRQ pin
  * if callback present, executes the callback, else, sets an interrupt flag
  * 

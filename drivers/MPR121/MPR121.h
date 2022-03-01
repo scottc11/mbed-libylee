@@ -82,6 +82,7 @@ public:
     void enable(void);
     void disable(void);
     bool connected();
+    bool padIsTouched();
 
     uint16_t handleTouch();
     uint16_t readPads();
