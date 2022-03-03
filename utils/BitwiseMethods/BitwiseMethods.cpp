@@ -106,3 +106,16 @@ uint16_t bitwise_last_16_of_32(uint32_t value) {
 uint16_t convert12to16(int value) {
   return ((value << 4) & (uint16_t)0xFFF0) | ((value >> 8) & (uint16_t)0x000F);
 }
+
+/**
+ * @brief return a slice of bytes within the given value
+ *
+ * @param value an 8-bit, 16-bit, or 32-bit value
+ * @param slice_start the start bit of the slice
+ * @param slice_length how many bits the slice contains
+ * @return uint32_t
+ */
+uint32_t bitwise_slice(uint32_t value, uint8_t slice_start, uint8_t slice_length)
+{
+  return (value >> slice_start) & (~(0xFFFF << slice_length));
+}

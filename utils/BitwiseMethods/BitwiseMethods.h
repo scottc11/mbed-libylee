@@ -18,4 +18,6 @@ uint16_t bitwise_last_16_of_32(uint32_t value);
 
 uint16_t convert12to16(int value);
 
+uint32_t bitwise_slice(uint32_t value, uint8_t slice_start, uint8_t slice_length);
+
 #endif
