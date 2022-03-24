@@ -43,9 +43,8 @@ class CAP1208 {
   void calibrate();
   void clearInterrupt();
   uint8_t touched();
-  bool padIsTouched(int pad, int currTouched, int prevTouched);
+  bool padIsTouched(int pad, int currTouched);
   bool padWasTouched(int pad, int currTouched, int prevTouched);
-  bool getBitStatus(int b, int bitNum);
 
 private:
 
