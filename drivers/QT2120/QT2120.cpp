@@ -35,7 +35,7 @@ uint16_t QT2120::getTouched() {
 }
 
 bool QT2120::keyIsTouched(int key) {
-  if (bitRead(touched, key)) {
+  if (bitwise_read_bit(touched, key)) {
     return true;
   } else {
     return false;

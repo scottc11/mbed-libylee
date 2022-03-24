@@ -20,31 +20,31 @@
  * @param byte target byte
  * @param bit index
 */ 
-int bitSet(int byte, int bit) {
+int bitwise_set_bit(int byte, int bit) {
   return (byte |= (1UL << bit));
 }
 
-int bitClear(int byte, int bit) {
+int bitwise_clear_bit(int byte, int bit) {
   return (byte &= ~(1UL << bit));
 }
 
-/** Clears all bits given a byte 
+/** @brief Clears all bits given a byte 
  * 0 means don't clear that bit, 1 means clear that bit
  * ex. byte == 0b00001100 will cleat bits 2 and 3
 */
-
-int bitClearMany(int byte, int value) {
+int bitwise_clear_many(int byte, int value)
+{
   return byte &= ~value;
 }
 
 /** write a given value to the selected bit index of a byte
  * @param byte 8/16/32 bit integer value
  * @param bit the bit / index to be set
- * @param value value to set. Either 1 or 0
+ * @param state value to set. Either 1 or 0
  * @return bit status 1 or 0
 */
-int bitWrite(int byte, int bit, int value) {
-  return (value ? bitSet(byte, bit) : bitClear(byte, bit));
+int bitwise_write_bit(int byte, int bit, bool state) {
+  return (state ? bitwise_set_bit(byte, bit) : bitwise_clear_bit(byte, bit));
 }
 
 /** Return the status of a bit within a byte
@@ -52,12 +52,12 @@ int bitWrite(int byte, int bit, int value) {
  * @param bit the bit / index to be read
  * @return bit status 1 or 0
 */ 
-int bitRead(int byte, int bit) {
+int bitwise_read_bit(int byte, int bit) {
   return (byte >> bit) & 0x01;
 }
 
-int bitFlip(int byte, int bit) {
-  return bitWrite(byte, bit, !bitRead(byte, bit));
+int bitwise_flip_bit(int byte, int bit) {
+  return bitwise_write_bit(byte, bit, !bitwise_read_bit(byte, bit));
 }
 
 /**

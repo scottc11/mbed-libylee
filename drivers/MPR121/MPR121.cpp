@@ -119,13 +119,13 @@ uint16_t MPR121::handleTouch() {
         for (uint8_t i = 0; i < 12; i++)
         {
             // it if *is* touched and *wasnt* touched before, execute callback
-            if (bitRead(currTouched, i) && !bitRead(prevTouched, i))
+            if (bitwise_read_bit(currTouched, i) && !bitwise_read_bit(prevTouched, i))
             {
                 if (touchedCallback) touchedCallback(i);
             }
 
             // if it *was* touched and now *isnt*, execute callback
-            if (!bitRead(currTouched, i) && bitRead(prevTouched, i))
+            if (!bitwise_read_bit(currTouched, i) && bitwise_read_bit(prevTouched, i))
             {
                 if (releasedCallback) releasedCallback(i);
             }

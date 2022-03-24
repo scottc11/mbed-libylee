@@ -59,10 +59,10 @@ uint8_t CAP1208::touched() {
 
 // if a pad *is* touched
 bool CAP1208::padIsTouched(int pad, int currTouched) {
-  return (bool)bitRead(currTouched, pad);
+  return (bool)bitwise_read_bit(currTouched, pad);
 }
 
 // if a pad it *wasn't* touched and now *is*, alert!
 bool CAP1208::padWasTouched(int pad, int currTouched, int prevTouched) {
-  return ((bool)bitRead(currTouched, pad) && !(bool)bitRead(prevTouched, pad));
+  return ((bool)bitwise_read_bit(currTouched, pad) && !(bool)bitwise_read_bit(prevTouched, pad));
 }

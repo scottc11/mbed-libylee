@@ -67,7 +67,7 @@ public:
             setPage(PAGE_0);
         }
         CoordinateXY coords = convertCoordinates(x, y);
-        state[coords.y] = bitWrite(state[coords.y], coords.x, value);
+        state[coords.y] = bitwise_write_bit(state[coords.y], coords.x, value);
         writeRegister(coords.y, state[coords.y]);
     }
 
@@ -78,13 +78,13 @@ public:
             setPage(PAGE_0);
         }
         CoordinateXY coords = convertCoordinates(x, y);
-        state[coords.y] = bitFlip(state[coords.y], coords.x);
+        state[coords.y] = bitwise_flip_bit(state[coords.y], coords.x);
         writeRegister(coords.y, state[coords.y]);
     }
 
     bool ledState(int x, int y) {
         CoordinateXY coords = convertCoordinates(x, y);
-        return bitRead(state[coords.y], coords.x);
+        return bitwise_read_bit(state[coords.y], coords.x);
     }
 
     CoordinateXY convertCoordinates(int x, int y) {

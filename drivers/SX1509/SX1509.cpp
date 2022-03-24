@@ -43,7 +43,7 @@ void SX1509::setPolarity(int pin, int polarity) {
   int bank = getBank(pin);
   int pinPos = getPinPos(pin);
   int reg = REG_POLARITY_B + bank;
-  this->i2cWrite(reg, bitWrite(this->i2cRead(reg), pinPos, polarity));
+  this->i2cWrite(reg, bitwise_write_bit(this->i2cRead(reg), pinPos, polarity));
 }
 
 /**
@@ -69,7 +69,7 @@ void SX1509::setInterupt(int pin, bool willNotInterupt, InteruptDirection type)
   int bank = getBank(pin);
   int pinPos = getPinPos(pin);
   int reg = REG_INTERRUPT_MASK_B + bank;
-  this->i2cWrite(reg, bitWrite(this->i2cRead(reg), pinPos, willNotInterupt));
+  this->i2cWrite(reg, bitwise_write_bit(this->i2cRead(reg), pinPos, willNotInterupt));
 
   // Set Sense
   if (pin > 7) {              // Bank B IOs
@@ -143,7 +143,7 @@ void SX1509::setInputDebounce(int pin, bool debounce)
   int pinPos = getPinPos(pin);
   int reg = REG_DEBOUNCE_ENABLE_B + bank;
   int hotValue = this->i2cRead(reg);
-  this->i2cWrite(reg, bitWrite(hotValue, pinPos, debounce));
+  this->i2cWrite(reg, bitwise_write_bit(hotValue, pinPos, debounce));
   hotValue = this->i2cRead(reg);
 }
 
@@ -198,19 +198,19 @@ void SX1509::ledConfig(int pin)
 
   reg = REG_INPUT_DISABLE_B + bank;
   hotConfig = this->i2cRead(reg);
-  this->i2cWrite(reg, bitWrite(hotConfig, pinNum, 1)); // Disable the input buffer (HIGH)
+  this->i2cWrite(reg, bitwise_write_bit(hotConfig, pinNum, 1)); // Disable the input buffer (HIGH)
 
   this->disablePullup(pin); // remove internal pull-up (LOW)
   
   reg = REG_OPEN_DRAIN_B + bank;
   hotConfig = this->i2cRead(reg);
-  this->i2cWrite(reg, bitWrite(hotConfig, pinNum, 1)); // set IO to open drain (HIGH)
+  this->i2cWrite(reg, bitwise_write_bit(hotConfig, pinNum, 1)); // set IO to open drain (HIGH)
 
   this->setDirection(pin, 0); // Set IO direction to output (LOW)
 
   reg = REG_LED_DRIVER_ENABLE_B + bank;
   hotConfig = this->i2cRead(reg);
-  this->i2cWrite(reg, bitWrite(hotConfig, pinNum, 1));
+  this->i2cWrite(reg, bitwise_write_bit(hotConfig, pinNum, 1));
 
   this->digitalWrite(pin, 0); // setting data LOW means LED Driver started
 }
@@ -231,7 +231,7 @@ void SX1509::digitalWrite(int pin, int value) {
   int bank = getBank(pin);
   int pinPos = getPinPos(pin);
   int reg = REG_DATA_B + bank;
-  this->i2cWrite(reg, bitWrite(this->i2cRead(reg), pinPos, value));
+  this->i2cWrite(reg, bitwise_write_bit(this->i2cRead(reg), pinPos, value));
 }
 
 int SX1509::digitalRead(int pin)
@@ -240,7 +240,7 @@ int SX1509::digitalRead(int pin)
   int pinPos = getPinPos(pin);
   int reg = REG_DATA_B + bank;
   int data = this->i2cRead(reg);
-  return bitRead(data, pinPos);
+  return bitwise_read_bit(data, pinPos);
 }
 
 
@@ -284,7 +284,7 @@ void SX1509::setDirection(int pin, int inOut)
   int bank = getBank(pin);
   int pinPos = getPinPos(pin);
   int reg = REG_DIR_B + bank;
-  this->i2cWrite(reg, bitWrite(this->i2cRead(reg), pinPos, inOut));
+  this->i2cWrite(reg, bitwise_write_bit(this->i2cRead(reg), pinPos, inOut));
 }
 
 /**
@@ -303,7 +303,7 @@ void SX1509::setOpenDrain(int pin, int value)
   int bank = getBank(pin);
   int pinPos = getPinPos(pin);
   int reg = REG_OPEN_DRAIN_B + bank;
-  this->i2cWrite(reg, bitWrite(this->i2cRead(reg), pinPos, value));
+  this->i2cWrite(reg, bitwise_write_bit(this->i2cRead(reg), pinPos, value));
 }
 
 
@@ -312,7 +312,7 @@ void SX1509::enablePullup(int pin)
   int bank = getBank(pin);
   int pinPos = getPinPos(pin);
   int reg = REG_PULL_UP_B + bank;
-  this->i2cWrite(reg, bitWrite(this->i2cRead(reg), pinPos, 1));
+  this->i2cWrite(reg, bitwise_write_bit(this->i2cRead(reg), pinPos, 1));
 }
 
 void SX1509::disablePullup(int pin)
@@ -320,7 +320,7 @@ void SX1509::disablePullup(int pin)
   int bank = getBank(pin);
   int pinPos = getPinPos(pin);
   int reg = REG_PULL_UP_B + bank;
-  this->i2cWrite(reg, bitWrite(this->i2cRead(reg), pinPos, 0));
+  this->i2cWrite(reg, bitwise_write_bit(this->i2cRead(reg), pinPos, 0));
 }
 
 /** LED PWM
@@ -396,10 +396,10 @@ void SX1509::setDriverMode(bool linear)
 {
   int hotValue = this->i2cRead(REG_MISC);
   if (linear) {
-    hotValue = bitClear(hotValue, 7);
+    hotValue = bitwise_clear_bit(hotValue, 7);
   }
   else {
-    hotValue = bitSet(hotValue, 7);
+    hotValue = bitwise_set_bit(hotValue, 7);
   }
   this->i2cWrite(REG_MISC, hotValue);
 };
