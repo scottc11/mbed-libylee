@@ -48,6 +48,9 @@ void CAP1208::calibrate() {
 */
 void CAP1208::clearInterrupt() {
   i2cWrite(MAIN_CTRL_REG, MAIN_CTRL_REG & ~0x01);
+#ifdef osCMSIS_FreeRTOS
+  vTaskDelay(1);
+#endif
 }
 
 // read input status of CAP1208
