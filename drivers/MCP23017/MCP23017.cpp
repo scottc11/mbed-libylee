@@ -26,9 +26,26 @@ void MCP23017::init(void) {
 	digitalRead(MCP23017_PORTB);
 }
 
+bool MCP23017::isConnected()
+{
+	// write some reg
+	bool status;
+	uint8_t originalConfig = getConfig();          // obtain current configuration
+	char writeData = 0b01010100;				   // test data
+	setConfig(writeData);						   // write test data to register
+	uint8_t readData = getConfig();				   // read back that reg
+	status = readData == writeData ? true : false; // confirm
+	setConfig(originalConfig);                      // clear / reset that reg back to default
+	return status;
+}
+
 void MCP23017::setConfig(char _value) {
 	
 	i2cSend(REG_IOCON, _value);
+}
+
+uint8_t MCP23017::getConfig() {
+	return i2cRead(REG_IOCON);
 }
 
 /**
@@ -36,8 +53,6 @@ void MCP23017::setConfig(char _value) {
  * When a bit is set, the corresponding pin becomes an input. When a bit is clear, the corresponding pin becomes an output.
 */
 void MCP23017::setDirection(char _port, char _value) {
-	// io.setDirection(MCP23017_PORTA, 0xFF);    // set all of the PORTA pins to input
-	// io.setDirection(MCP23017_PORTB, 0x00);    // sets all of the PORTB pins to output
 	i2cSend(REG_IODIR + _port, _value);
 }
 

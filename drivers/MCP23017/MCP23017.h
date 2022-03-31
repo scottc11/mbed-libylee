@@ -44,7 +44,9 @@ class MCP23017 {
 	/** Software Reset
 	 */
 	void init(void);
+	bool isConnected();
 	void setConfig(char _value);
+	uint8_t getConfig();
 	void setDirection(char _port, char _value);       // set port pins to input or output.  1 = input, 0 = output	
 	void setPullUp(char _port, char _value);          // activate pin pull-ups
 	void setInputPolarity(char _port, char _value);   // invert pin input polarity
@@ -78,17 +80,16 @@ private:
 		
 		i2c->write(address, commands, 2);
 	}
-	
-	inline char i2cRead(char _command){
+
+	inline char __attribute__((optimize("O0"))) i2cRead(char _command)
+	{
 		uint8_t commands[2];
 		commands[0] = _command;
 		i2c->write(address, commands, 1);
-		//return (char)i2c->read(0);
 		i2c->read(address,commands,1);
 		return commands[0];
 	}
-	
-	
+
 	// registors
 	enum MCP23017_REG {
 		// IO Dirrection
