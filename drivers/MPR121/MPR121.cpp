@@ -7,10 +7,8 @@
 */
 void MPR121::init(void)
 {
-    irq.fall(callback(this, &MPR121::irq_handler)); // and attach the interrupt handler
-
     // setup and registers - start with POR values (must be in stop mode)
-    MPR121::writeRegister(SRST, 0x63); // asserts soft reset. The soft reset does not effect the I2C module, but all others reset the same as POR.
+    this->reset();
 
     // Baseline Filtering Control Register (changes response sensitivity)
     MPR121::writeRegister(MHDR, 0x1);  //REG 0x2B
@@ -50,7 +48,7 @@ void MPR121::init(void)
     // Electrode Configuration Register - enable all 12 and start
     MPR121::writeRegister(ECR, 0x8f);
 
-    return;
+    irq.fall(callback(this, &MPR121::irq_handler)); // and attach the interrupt handler
 }
 
 void MPR121::poll() {
@@ -60,12 +58,23 @@ void MPR121::poll() {
     }
 }
 
+/**
+ * @brief asserts soft reset. The soft reset does not effect the I2C module, but all others reset the same as POR.
+ *
+ */
+void MPR121::reset()
+{
+    this->writeRegister(SRST, 0x63);
+}
+
 /** NOTE: Not yet tested
  * Check if the IC is successfully connected to I2C line by checking a known default register value
  * NOTE: run this func before running init, as init may change the target registers value
 */
-bool MPR121::connected() {
-    if (this->readRegister(CDT_CONFIG) == 0x24)
+bool MPR121::connected()
+{
+    volatile uint8_t temp = this->readRegister(CDT_CONFIG);
+    if (temp == 0x24)
     {
         return true;
     } else {
@@ -73,17 +82,24 @@ bool MPR121::connected() {
     }
 }
 
-/** 
+/**
  * Allow the IC to run and collect user input
-*/
+ * The MPR121’s Run Mode and Stop Mode are controlled by control bits in Electrode Configuration Register (ECR, 0x5E).
+ * When all ELEPROX_EN and ELE_EN bits are zeros, the MPR121 is in Stop Mode. While in Stop Mode, there are no
+ * capacitance or touch detection measurement on any of the 13 channels.
+ * When any of the ELEPROX_EN and ELE_EN bits are set to ‘1’, the MPR121 is in Run Mode.
+ * The MPR121 will continue to run on its own until it is set again to Stop Mode by the user.
+ *
+ * The MPR121 registers read operation can be done at any time, either in Run Mode or in Stop Mode. 
+ * However, the register write operation can only be done in Stop Mode. The ECR (0x5E) and GPIO/LED 
+ * control registers (0x73~0x7A) can be written at anytime.
+ */
 void MPR121::enable(void)
 {
     _button = 0;
     _button_has_changed = 0;
     // enable the 12 electrodes - allow disable to put device into lower current consumption mode
     writeRegister(ECR, 0x8f);
-
-    return;
 }
 
 /**
@@ -92,16 +108,7 @@ void MPR121::enable(void)
 void MPR121::disable(void)
 {
     // detach the interrupt handler
-    irq.fall(NULL);
-    _button = 0;
-    _button_has_changed = 0;
-    
-    // put the device in low current consumption mode - dont re-init registers
     writeRegister(ECR, 0x0);
-    writeRegister(AUTO_CFG0, 0x0); // REG 0x7B
-    writeRegister(AUTO_CFG1, 0x0); // REG 0x7C
-
-    return;
 }
 
 /**
@@ -194,6 +201,10 @@ bool MPR121::interruptDetected() {
 void MPR121::clearInterrupt() {
     interrupt = false;
     return;
+}
+
+int MPR121::readInterruptPin() {
+    return irq.read();
 }
 
 /**
