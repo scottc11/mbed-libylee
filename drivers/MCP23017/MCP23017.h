@@ -81,7 +81,7 @@ private:
 		i2c->write(address, commands, 2);
 	}
 
-	inline char __attribute__((optimize("O0"))) i2cRead(char _command)
+	inline char i2cRead(char _command)
 	{
 		uint8_t commands[2];
 		commands[0] = _command;
