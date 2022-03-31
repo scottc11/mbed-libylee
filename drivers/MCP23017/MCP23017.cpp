@@ -9,8 +9,8 @@
 
 void MCP23017::init(void) {
 	
-	// init config, mirror interupts
-	i2cSend(REG_IOCON, 0b01000000);
+	// init config, mirror interrupts
+	setConfig(0b01000000);
 
 	// port 0
 	i2cSend(REG_GPIO, 0, 0);
@@ -39,9 +39,39 @@ bool MCP23017::isConnected()
 	return status;
 }
 
-void MCP23017::setConfig(char _value) {
-	
-	i2cSend(REG_IOCON, _value);
+/**
+ * @brief
+ *   Bit 7 ............................................... Bit 0
+ * | BANK | MIRROR | SEQOP | DISSLW | HAEN | ODR | INTPOL |  -  |
+ * 
+	BANK: Controls how the registers are addressed
+		1 = The registers associated with each port are separated into different banks.
+		0 = The registers are in the same bank (addresses are sequential).
+	MIRROR: INT Pins Mirror bit
+		1 = The INT pins are internally connected
+		0 = The INT pins are not connected. INTA is associated with PORTA and INTB is associated with PORTB
+	SEQOP: Sequential Operation mode bit
+		1 = Sequential operation disabled, address pointer does not increment.
+		0 = Sequential operation enabled, address pointer increments.
+	DISSLW: Slew Rate control bit for SDA output
+		1 = Slew rate disabled
+		0 = Slew rate enabled
+	HAEN: Hardware Address Enable bit (MCP23S17 only) (Note 1)
+		1 = Enables the MCP23S17 address pins.
+		0 = Disables the MCP23S17 address pins.
+	ODR: Configures the INT pin as an open-drain output
+		1 = Open-drain output (overrides the INTPOL bit.)
+		0 = Active driver output (INTPOL bit sets the polarity.)
+	INTPOL: This bit sets the polarity of the INT output pin
+		1= Active-high
+		0= Active-low
+	UNIMPLEMENTED: Read as ‘0’
+ *
+ * @note The INTn interrupt output can be configured as active-low, active-high or open-drain via the IOCON register.
+ * @param config
+ */
+void MCP23017::setConfig(char config) {
+	i2cSend(REG_IOCON, config);
 }
 
 uint8_t MCP23017::getConfig() {
