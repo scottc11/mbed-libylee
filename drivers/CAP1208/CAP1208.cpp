@@ -3,13 +3,6 @@
 
 void CAP1208::init() {
   
-  // read product id to test connection
-  if (i2cRead(PRODUCT_ID_REG) != CAP1208_PROD_ID) {
-    connected = false;
-  } else {
-    connected = true;
-  }
-
   i2cWrite(AVR_SMPL_CONF_REG, 0x00);        // speed up sampling time
   i2cWrite(SENSITIVITY, 0xF);               // delta sense @ 128
   i2cWrite(MULT_TOUCH_CONF_REG, 0x00);      // allow multiple touches
@@ -24,8 +17,22 @@ void CAP1208::disableInterupts() {
   i2cWrite(INT_ENABLE_REG, 0x00);
 }
 
-bool CAP1208::isConnected() {
-  return connected;
+/**
+ * @brief read product id register to test connection
+ *
+ * @return true
+ * @return false
+ */
+bool CAP1208::isConnected()
+{
+  if (i2cRead(MANUFACTURER_ID_REG) == CAP12x8_MAN_ID)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
 }
 
 uint8_t CAP1208::getControlStatus() {

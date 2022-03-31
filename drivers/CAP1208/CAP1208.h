@@ -6,6 +6,8 @@
 
 #define CAP1208_I2C_ADDR     0x50
 #define CAP1208_PROD_ID      0x6B
+#define CAP1298_PROD_ID      0x71
+#define CAP12x8_MAN_ID       0x5D
 
 // supports I2C speeds to 400kHz
 
@@ -70,18 +72,20 @@ private:
     return buffer[0];
   }
 
-  enum Registers {
+  enum Registers
+  {
     MAIN_CTRL_REG = 0x00,
-    GENERAL_STATUS_REG = 0x02,     // read general status of CAP1208
-    SENSITIVITY = 0x1F,            // The Sensitivity Control register controls the sensitivity of a touch detection
+    GENERAL_STATUS_REG = 0x02, // read general status of CAP1208
+    SENSITIVITY = 0x1F,        // The Sensitivity Control register controls the sensitivity of a touch detection
     INPUT_STATUS_REG = 0x03,
     PRODUCT_ID_REG = 0xFD,
-    AVR_SMPL_CONF_REG = 0x24,      // default: 0b00111001
-    CALIBRATE_REG = 0x26,          // CALIBRATION ACTIVATE AND STATUS
+    MANUFACTURER_ID_REG = 0xFE, // default: 0x5D
+    AVR_SMPL_CONF_REG = 0x24, // default: 0b00111001
+    CALIBRATE_REG = 0x26,     // CALIBRATION ACTIVATE AND STATUS
     MULT_TOUCH_CONF_REG = 0x2A,
     INT_ENABLE_REG = 0x27,
     REPEAT_RATE_ENABLE_REG = 0x28,
-    CONF_2_REG = 0x44,             // default: 0x40
+    CONF_2_REG = 0x44, // default: 0x40
   };
 };
 
