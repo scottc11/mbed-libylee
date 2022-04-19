@@ -235,7 +235,7 @@ void SX1509::reset() {
   this->i2cWrite(REG_RESET, 0x34);
 }
 
-/** LED Driver Configuration
+/** @brief LED Driver Configuration
 
 Please note that in this configuration the IO must be programmed as open drain output (RegOpenDrain)
 with no pull-up (RegPullUp) and input buffer must be disabled (RegInputBufferDisable).
@@ -252,7 +252,6 @@ Below are the steps required to use the LED driver with the typical LED connecti
 - Configure LED driver parameters (RegTOn, RegIOn, RegOff, RegTRise, RegTFall)
 - Set RegData bit low => LED driver started 
 */
-
 void SX1509::ledConfig(int pin)
 {
   int hotConfig; // the current value of the register
@@ -406,19 +405,17 @@ void SX1509::setPWM(int pin, int value)
 */
 void SX1509::blinkLED(int pin, uint8_t onTime, uint8_t offTime, uint8_t onIntensity, uint8_t offIntensity)
 {
-  this->i2cWrite(REG_T_ON[pin], (onTime > 31) ? 31 : onTime);
+  this->setOnTime(pin, onTime);
   this->setPWM(pin, onIntensity);
-  
   this->setOffTime(pin, offTime, offIntensity);
 }
 
 /**
- * Set the amoount of time the LED will remain ON in blink mode
-
-onTime:
-  0 : Infinite (Static mode, TOn directly controlled by RegData, Cf §4.8.2)
-  1 - 15 : TOnX = 64 * RegTOnX * (255/ClkX)
-  16 - 31 : TOnX = 512 * RegTOnX * (255/ClkX)
+ * @brief Set the amount of time the LED will remain ON in blink mode
+ * @param onTime:
+      0 : Infinite (Static mode, TOn directly controlled by RegData, Cf §4.8.2)
+      1 - 15 : TOnX = 64 * RegTOnX * (255/ClkX)
+      16 - 31 : TOnX = 512 * RegTOnX * (255/ClkX)
 */
 void SX1509::setOnTime(int pin, uint8_t onTime) {
   this->i2cWrite(REG_T_ON[pin], (onTime > 31) ? 31 : onTime);
