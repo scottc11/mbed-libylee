@@ -306,6 +306,12 @@ int SX1509::digitalRead(int pin)
   return bitwise_read_bit(data, pinPos);
 }
 
+int SX1509::digitalToggle(int pin) {
+  int bank = getBank(pin);
+  int pinPos = getPinPos(pin);
+  int reg = REG_DATA_B + bank;
+  this->i2cWrite(reg, bitwise_flip_bit(this->i2cRead(reg), pinPos));
+}
 
 /**
  * returns bank A IO states in 8-bits

@@ -56,6 +56,13 @@ int bitwise_read_bit(int byte, int bit) {
   return (byte >> bit) & 0x01;
 }
 
+/**
+ * @brief Invert / Flip a bit in a byte
+ * 
+ * @param byte 
+ * @param bit 
+ * @return int 
+ */
 int bitwise_flip_bit(int byte, int bit) {
   return bitwise_write_bit(byte, bit, !bitwise_read_bit(byte, bit));
 }
