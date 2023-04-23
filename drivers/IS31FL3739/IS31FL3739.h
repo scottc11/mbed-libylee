@@ -1,10 +1,10 @@
 #ifndef __IS31FL3739_H
 #define __IS31FL3739_H
 
-// I2C Pull-Ups: 4.7kΩ @ 400kHz, 2kΩ @ 1MHz
+#include "common.h"
+#include "I2C.h"
 
-#include <mbed.h>
-#include <OK_I2C.h>
+// I2C Pull-Ups: 4.7kΩ @ 400kHz, 2kΩ @ 1MHz
 
 #define IS31FL3739_ADDR 0x68 // 8-bit addr
 
@@ -34,33 +34,34 @@ public:
     void setScale(uint8_t val);
 
 private:
-    enum Registers
+    void writeRegister(char reg, char _data1, char _data2)
     {
-        CONFIG_REG = 0xA0,
-        CURR_CTRL_REG = 0xA1,
-        PWM_REG = 0x03,
-        SCALING_REG = 0x92,
-        PWM_FREQ_REG = 0xB2,
-        RESET_REG = 0xCF
-    };
+        uint8_t commands[3];
+        commands[0] = reg;
+        commands[1] = _data1;
+        commands[2] = _data2;
+
+        i2c->write(address, commands, 3);
+    }
 
     void writeRegister(char reg, char _data1)
     {
-        char commands[2];
+        uint8_t commands[2];
         commands[0] = reg;
         commands[1] = _data1;
 
         i2c->write(address, commands, 2);
     }
 
-    char readRegister(char reg)
+    enum Registers
     {
-        char buffer[2];
-        buffer[0] = reg;
-        i2c->write(address, buffer, 1);
-        i2c->read(address, buffer, 1);
-        return buffer[0];
-    }
+        CONFIG_REG = 0xA0,    // Configure the operation mode
+        CURR_CTRL_REG = 0xA1, // Set the global current
+        PWM_REG = 0x03,       // Set PWM value for LED
+        SCALING_REG = 0x92,   // Control the DC output current of each CSy
+        PWM_FREQ_REG = 0xB2,  // Set the PWM frequency
+        RESET_REG = 0xCF
+    };
 };
 
 #endif

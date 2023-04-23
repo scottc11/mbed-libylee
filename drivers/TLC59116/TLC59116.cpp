@@ -205,12 +205,12 @@ void TLC59116::setAllOutputsHigh() {
 
 void TLC59116::enableDimmingMode() {
   int config = readRegister(MODE2);
-  config = bitClear(config, 5);
+  config = bitwise_clear_bit(config, 5);
   writeRegister(MODE2, config);  
 }
 
 void TLC59116::enableBlinkingMode() {
   int config = readRegister(MODE2);
-  config = bitSet(config, 5);
+  config = bitwise_set_bit(config, 5);
   writeRegister(MODE2, config);
 }

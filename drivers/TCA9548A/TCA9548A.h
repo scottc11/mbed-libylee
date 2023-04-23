@@ -1,12 +1,9 @@
 #ifndef __TCA9548A_H
 #define __TCA9548A_H
 
+#include "I2C.h"
 
 #define TCA9548A_DEFAULT_ADDR     0x70 // 1110000
-
-
-#include <mbed.h>
-
 class TCA9548A {
 public:
   
@@ -29,8 +26,8 @@ public:
   uint8_t address;
   int channel;
   I2C * i2c;
-  char read_buffer[1];
-  char write_buffer[1];
+  uint8_t read_buffer[1];
+  uint8_t write_buffer[1];
 
   void enableChan(Channel channel) {
     write_buffer[0] = channel;

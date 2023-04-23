@@ -3,13 +3,6 @@
 
 void CAP1208::init() {
   
-  // read product id to test connection
-  if (i2cRead(PRODUCT_ID_REG) != CAP1208_PROD_ID) {
-    connected = false;
-  } else {
-    connected = true;
-  }
-
   i2cWrite(AVR_SMPL_CONF_REG, 0x00);        // speed up sampling time
   i2cWrite(SENSITIVITY, 0xF);               // delta sense @ 128
   i2cWrite(MULT_TOUCH_CONF_REG, 0x00);      // allow multiple touches
@@ -17,15 +10,29 @@ void CAP1208::init() {
   i2cWrite(REPEAT_RATE_ENABLE_REG, 0x00);   // disable repeat rate for all channels
   i2cWrite(CONF_2_REG, 0x60);               // disable BLK_PWR_CTRL power saving feature
 
-  clearInterupt();
+  clearInterrupt();
 }
 
 void CAP1208::disableInterupts() {
   i2cWrite(INT_ENABLE_REG, 0x00);
 }
 
-bool CAP1208::isConnected() {
-  return connected;
+/**
+ * @brief read product id register to test connection
+ *
+ * @return true
+ * @return false
+ */
+bool CAP1208::isConnected()
+{
+  if (i2cRead(MANUFACTURER_ID_REG) == CAP12x8_MAN_ID)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
 }
 
 uint8_t CAP1208::getControlStatus() {
@@ -46,29 +53,26 @@ void CAP1208::calibrate() {
  * 
  * for some reason we have to "clear" the INT bit everytime we read the sensors...
 */
-void CAP1208::clearInterupt() {
+void CAP1208::clearInterrupt() {
   i2cWrite(MAIN_CTRL_REG, MAIN_CTRL_REG & ~0x01);
+#ifdef osCMSIS_FreeRTOS
+  vTaskDelay(1);
+#endif
 }
 
 // read input status of CAP1208
 uint8_t CAP1208::touched() {
-  this->clearInterupt();
+  this->clearInterrupt();
   uint8_t data = i2cRead(INPUT_STATUS_REG);
   return data;
 }
 
-// if it *is* touched and *wasnt* touched before, alert!
-bool CAP1208::padIsTouched(int pad, int currTouched, int prevTouched) {
-  return (getBitStatus(currTouched, pad) && !getBitStatus(prevTouched, pad));
+// if a pad *is* touched
+bool CAP1208::padIsTouched(int pad, int currTouched) {
+  return (bool)bitwise_read_bit(currTouched, pad);
 }
 
-// if it *was* touched and now *isnt*, alert!
+// if a pad it *wasn't* touched and now *is*, alert!
 bool CAP1208::padWasTouched(int pad, int currTouched, int prevTouched) {
-  return (!getBitStatus(currTouched, pad) && getBitStatus(prevTouched, pad));
-}
-
-// bitNum starts at 0-7 for 8-bits
-// https://stackoverflow.com/questions/47981/how-do-you-set-clear-and-toggle-a-single-bit
-bool CAP1208::getBitStatus(int b, int bitNum) {
-  return (b & (1 << bitNum));
+  return ((bool)bitwise_read_bit(currTouched, pad) && !(bool)bitwise_read_bit(prevTouched, pad));
 }

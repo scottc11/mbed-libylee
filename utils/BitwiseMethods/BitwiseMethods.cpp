@@ -20,31 +20,31 @@
  * @param byte target byte
  * @param bit index
 */ 
-int bitSet(int byte, int bit) {
+int bitwise_set_bit(int byte, int bit) {
   return (byte |= (1UL << bit));
 }
 
-int bitClear(int byte, int bit) {
+int bitwise_clear_bit(int byte, int bit) {
   return (byte &= ~(1UL << bit));
 }
 
-/** Clears all bits given a byte 
+/** @brief Clears all bits given a byte 
  * 0 means don't clear that bit, 1 means clear that bit
  * ex. byte == 0b00001100 will cleat bits 2 and 3
 */
-
-int bitClearMany(int byte, int value) {
+int bitwise_clear_many(int byte, int value)
+{
   return byte &= ~value;
 }
 
 /** write a given value to the selected bit index of a byte
  * @param byte 8/16/32 bit integer value
  * @param bit the bit / index to be set
- * @param value value to set. Either 1 or 0
+ * @param state value to set. Either 1 or 0
  * @return bit status 1 or 0
 */
-int bitWrite(int byte, int bit, int value) {
-  return (value ? bitSet(byte, bit) : bitClear(byte, bit));
+int bitwise_write_bit(int byte, int bit, bool state) {
+  return (state ? bitwise_set_bit(byte, bit) : bitwise_clear_bit(byte, bit));
 }
 
 /** Return the status of a bit within a byte
@@ -52,12 +52,19 @@ int bitWrite(int byte, int bit, int value) {
  * @param bit the bit / index to be read
  * @return bit status 1 or 0
 */ 
-int bitRead(int byte, int bit) {
+int bitwise_read_bit(int byte, int bit) {
   return (byte >> bit) & 0x01;
 }
 
-int bitFlip(int byte, int bit) {
-  return bitWrite(byte, bit, !bitRead(byte, bit));
+/**
+ * @brief Invert / Flip a bit in a byte
+ * 
+ * @param byte 
+ * @param bit 
+ * @return int 
+ */
+int bitwise_flip_bit(int byte, int bit) {
+  return bitwise_write_bit(byte, bit, !bitwise_read_bit(byte, bit));
 }
 
 /**
@@ -79,10 +86,43 @@ void byte32to16(uint16_t *bytes, uint32_t byte32) {
 }
 
 /**
+ * @brief returns the first half of a 32-bit value
+ * 
+ * @param value 
+ * @return uint16_t 
+ */
+uint16_t bitwise_first_16_of_32(uint32_t value) {
+  return value & 0xffff;
+}
+
+/**
+ * @brief returns the last half of a 32-bit value
+ *
+ * @param value
+ * @return uint16_t
+ */
+uint16_t bitwise_last_16_of_32(uint32_t value) {
+  return (value >> 16) & 0xffff;
+}
+
+/**
  * @brief perform a 12-bit to 16-bit conversion
  * @param value 12-bit value to be converted
  * @return 16-bit value
 */
 uint16_t convert12to16(int value) {
   return ((value << 4) & (uint16_t)0xFFF0) | ((value >> 8) & (uint16_t)0x000F);
+}
+
+/**
+ * @brief return a slice of bytes within the given value
+ *
+ * @param value an 8-bit, 16-bit, or 32-bit value
+ * @param slice_start the start bit of the slice
+ * @param slice_length how many bits the slice contains
+ * @return uint32_t
+ */
+uint32_t bitwise_slice(uint32_t value, uint8_t slice_start, uint8_t slice_length)
+{
+  return (value >> slice_start) & (~(0xFFFF << slice_length));
 }

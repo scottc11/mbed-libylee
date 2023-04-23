@@ -1,16 +1,34 @@
+/**
+ * Example: All pins as GPIO Inputs
+
+mcp.init();
+mcp.setDirection(MCP23017_PORTA, 0xff);
+mcp.setDirection(MCP23017_PORTB, 0b11111111);
+mcp.setInterupt(MCP23017_PORTA, 0xff);
+mcp.setInterupt(MCP23017_PORTB, 0b11111111);
+mcp.setPullUp(MCP23017_PORTA, 0xff);
+mcp.setPullUp(MCP23017_PORTB, 0b01111111);
+mcp.setInputPolarity(MCP23017_PORTA, 0xff);
+mcp.setInputPolarity(MCP23017_PORTB, 0b11111111);
+
+mcp.digitalReadAB(); // clear any stray interupts after configuration
+
+*/
 
 #ifndef _MCP23017_H_
 #define _MCP23017_H_
 
-#include <mbed.h>
+#include "I2C.h"
 
 #define MCP23017_DEFAULT_ADDR 0x20
 #define MCP23017_PORTA 0x00
 #define MCP23017_PORTB 0x01
 
-// supports I2C speeds 400kHz, 1.7MHz
-// note: This class assumes the use of bank = 0 for register addresses. Reference the datasheet.
-
+/**
+ * supports I2C speeds 400kHz, 1.7MHz 
+ * NOTE: This class assumes the use of bank = 0 for register addresses. Reference the datasheet.
+ * NOTE: 
+*/
 class MCP23017 {
 	
 	public:
@@ -26,7 +44,9 @@ class MCP23017 {
 	/** Software Reset
 	 */
 	void init(void);
+	bool isConnected();
 	void setConfig(char _value);
+	uint8_t getConfig();
 	void setDirection(char _port, char _value);       // set port pins to input or output.  1 = input, 0 = output	
 	void setPullUp(char _port, char _value);          // activate pin pull-ups
 	void setInputPolarity(char _port, char _value);   // invert pin input polarity
@@ -45,7 +65,7 @@ class MCP23017 {
 private:
 
 	inline void i2cSend(char _command, char _data1, char _data2){
-		char commands[3];
+		uint8_t commands[3];
 		commands[0] = _command;
 		commands[1] = _data1;
 		commands[2] = _data2;
@@ -54,23 +74,22 @@ private:
 	}
 	
 	inline void i2cSend(char _command, char _data1){
-		char commands[2];
+		uint8_t commands[2];
 		commands[0] = _command;
 		commands[1] = _data1;
 		
 		i2c->write(address, commands, 2);
 	}
-	
-	inline char i2cRead(char _command){
-		char commands[2];
+
+	inline char i2cRead(char _command)
+	{
+		uint8_t commands[2];
 		commands[0] = _command;
 		i2c->write(address, commands, 1);
-		//return (char)i2c->read(0);
 		i2c->read(address,commands,1);
 		return commands[0];
 	}
-	
-	
+
 	// registors
 	enum MCP23017_REG {
 		// IO Dirrection

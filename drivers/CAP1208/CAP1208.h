@@ -1,11 +1,13 @@
 #ifndef __CAP1208_H
 #define __CAP1208_H
 
-#include <mbed.h>
+#include "I2C.h"
 #include "TCA9548A.h"
 
 #define CAP1208_I2C_ADDR     0x50
 #define CAP1208_PROD_ID      0x6B
+#define CAP1298_PROD_ID      0x71
+#define CAP12x8_MAN_ID       0x5D
 
 // supports I2C speeds to 400kHz
 
@@ -41,19 +43,18 @@ class CAP1208 {
   uint8_t getControlStatus();
   uint8_t getGeneralStatus();
   void calibrate();
-  void clearInterupt();
+  void clearInterrupt();
   uint8_t touched();
-  bool padIsTouched(int pad, int currTouched, int prevTouched);
+  bool padIsTouched(int pad, int currTouched);
   bool padWasTouched(int pad, int currTouched, int prevTouched);
-  bool getBitStatus(int b, int bitNum);
 
 private:
 
   void i2cWrite(char reg, char data) {
     
     if (useMux) { mux->enableChan(muxChannel); }
-    
-    char buffer[2];
+
+    uint8_t buffer[2];
     buffer[0] = reg;
     buffer[1] = data;
     i2c->write(CAP1208_I2C_ADDR, buffer, 2);
@@ -63,26 +64,28 @@ private:
     
     if (useMux) { mux->enableChan(muxChannel); }
 
-    char command[1];
-    char buffer[1];
+    uint8_t command[1];
+    uint8_t buffer[1];
     command[0] = reg;
     i2c->write(CAP1208_I2C_ADDR, command, 1, true);
     i2c->read(CAP1208_I2C_ADDR, buffer, 1);
     return buffer[0];
   }
 
-  enum Registers {
+  enum Registers
+  {
     MAIN_CTRL_REG = 0x00,
-    GENERAL_STATUS_REG = 0x02,     // read general status of CAP1208
-    SENSITIVITY = 0x1F,            // The Sensitivity Control register controls the sensitivity of a touch detection
+    GENERAL_STATUS_REG = 0x02, // read general status of CAP1208
+    SENSITIVITY = 0x1F,        // The Sensitivity Control register controls the sensitivity of a touch detection
     INPUT_STATUS_REG = 0x03,
     PRODUCT_ID_REG = 0xFD,
-    AVR_SMPL_CONF_REG = 0x24,      // default: 0b00111001
-    CALIBRATE_REG = 0x26,          // CALIBRATION ACTIVATE AND STATUS
+    MANUFACTURER_ID_REG = 0xFE, // default: 0x5D
+    AVR_SMPL_CONF_REG = 0x24, // default: 0b00111001
+    CALIBRATE_REG = 0x26,     // CALIBRATION ACTIVATE AND STATUS
     MULT_TOUCH_CONF_REG = 0x2A,
     INT_ENABLE_REG = 0x27,
     REPEAT_RATE_ENABLE_REG = 0x28,
-    CONF_2_REG = 0x44,             // default: 0x40
+    CONF_2_REG = 0x44, // default: 0x40
   };
 };
 

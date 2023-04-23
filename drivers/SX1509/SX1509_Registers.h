@@ -1,5 +1,3 @@
-#include <mbed.h>
-
 // Stolen from SparkFun 🙂 https://github.com/sparkfun/SparkFun_SX1509_Arduino_Library/blob/master/
 
 // Configuration

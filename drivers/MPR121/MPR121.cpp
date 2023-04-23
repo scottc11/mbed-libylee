@@ -1,21 +1,14 @@
 
 
 #include "MPR121.h"
-#include "mbed_debug.h"
 
 /**
  * Clear state variables and initilize the dependant objects
 */
 void MPR121::init(void)
 {
-    // set the i2c speed
-    i2c->frequency(400000);
-    
-    // irq is open-collector and active-low
-    irq.mode(PullUp);
-
     // setup and registers - start with POR values (must be in stop mode)
-    MPR121::writeRegister(SRST, 0x63); // asserts soft reset. The soft reset does not effect the I2C module, but all others reset the same as POR.
+    this->reset();
 
     // Baseline Filtering Control Register (changes response sensitivity)
     MPR121::writeRegister(MHDR, 0x1);  //REG 0x2B
@@ -55,22 +48,33 @@ void MPR121::init(void)
     // Electrode Configuration Register - enable all 12 and start
     MPR121::writeRegister(ECR, 0x8f);
 
-    return;
+    irq.fall(callback(this, &MPR121::irq_handler)); // and attach the interrupt handler
 }
 
 void MPR121::poll() {
-    if (this->interuptDetected())
+    if (this->interruptDetected())
     {
         this->handleTouch();
     }
+}
+
+/**
+ * @brief asserts soft reset. The soft reset does not effect the I2C module, but all others reset the same as POR.
+ *
+ */
+void MPR121::reset()
+{
+    this->writeRegister(SRST, 0x63);
 }
 
 /** NOTE: Not yet tested
  * Check if the IC is successfully connected to I2C line by checking a known default register value
  * NOTE: run this func before running init, as init may change the target registers value
 */
-bool MPR121::connected() {
-    if (this->readRegister(CDT_CONFIG) == 0x24)
+bool MPR121::connected()
+{
+    volatile uint8_t temp = this->readRegister(CDT_CONFIG);
+    if (temp == 0x24)
     {
         return true;
     } else {
@@ -78,18 +82,24 @@ bool MPR121::connected() {
     }
 }
 
-/** 
+/**
  * Allow the IC to run and collect user input
-*/
+ * The MPR121’s Run Mode and Stop Mode are controlled by control bits in Electrode Configuration Register (ECR, 0x5E).
+ * When all ELEPROX_EN and ELE_EN bits are zeros, the MPR121 is in Stop Mode. While in Stop Mode, there are no
+ * capacitance or touch detection measurement on any of the 13 channels.
+ * When any of the ELEPROX_EN and ELE_EN bits are set to ‘1’, the MPR121 is in Run Mode.
+ * The MPR121 will continue to run on its own until it is set again to Stop Mode by the user.
+ *
+ * The MPR121 registers read operation can be done at any time, either in Run Mode or in Stop Mode. 
+ * However, the register write operation can only be done in Stop Mode. The ECR (0x5E) and GPIO/LED 
+ * control registers (0x73~0x7A) can be written at anytime.
+ */
 void MPR121::enable(void)
 {
     _button = 0;
     _button_has_changed = 0;
     // enable the 12 electrodes - allow disable to put device into lower current consumption mode
     writeRegister(ECR, 0x8f);
-    irq.fall(callback(this, &MPR121::irq_handler)); // and attach the interrupt handler
-
-    return;
 }
 
 /**
@@ -98,20 +108,11 @@ void MPR121::enable(void)
 void MPR121::disable(void)
 {
     // detach the interrupt handler
-    irq.fall(NULL);
-    _button = 0;
-    _button_has_changed = 0;
-    
-    // put the device in low current consumption mode - dont re-init registers
     writeRegister(ECR, 0x0);
-    writeRegister(AUTO_CFG0, 0x0); // REG 0x7B
-    writeRegister(AUTO_CFG1, 0x0); // REG 0x7C
-
-    return;
 }
 
 /**
- * @brief This method gets called everytime the MPR121 delivers an interupt.
+ * @brief This method gets called everytime the MPR121 delivers an interrupt.
  * Calls both touch and release callbacks with the given pad that was touched.
  * 
  * @return the currently touched (or not touched) pads
@@ -125,13 +126,13 @@ uint16_t MPR121::handleTouch() {
         for (uint8_t i = 0; i < 12; i++)
         {
             // it if *is* touched and *wasnt* touched before, execute callback
-            if (bitRead(currTouched, i) && !bitRead(prevTouched, i))
+            if (bitwise_read_bit(currTouched, i) && !bitwise_read_bit(prevTouched, i))
             {
                 if (touchedCallback) touchedCallback(i);
             }
 
             // if it *was* touched and now *isnt*, execute callback
-            if (!bitRead(currTouched, i) && bitRead(prevTouched, i))
+            if (!bitwise_read_bit(currTouched, i) && bitwise_read_bit(prevTouched, i))
             {
                 if (releasedCallback) releasedCallback(i);
             }
@@ -143,13 +144,16 @@ uint16_t MPR121::handleTouch() {
     return currTouched;
 }
 
-/** Fetches currently touched pad data from MPR121 then clears class interupt
+/** Fetches currently touched pad data from MPR121 then clears class interrupt
  * @return 16 bit value containing status of all 12 pads
+ * NOTE: You must clear interrupt flag before reading the IC, otherwise the callback function would 
+ * execute and set interrupt to true, which would then get immediately cleared by clearInterrupt(). 
+ * So the POLL function would not know to read the IC again.
 */
 uint16_t MPR121::readPads()
 {
+    this->clearInterrupt(); 
     uint16_t touched = readRegister16(ELE0_7_STAT);
-    this->clearInterupt();
     return touched;
 }
 
@@ -157,37 +161,58 @@ uint16_t MPR121::getCurrTouched() { return currTouched; }
 uint16_t MPR121::getPrevTouched() { return prevTouched; }
 
 /**
+ * @brief returns true if any of the pads are being touched
+ * 
+ * @return true 
+ * @return false 
+ */
+bool MPR121::padIsTouched()
+{
+    if (this->getCurrTouched() != 0x00) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+/**
  * @brief The interrupt handler for the IRQ pin
- * if callback present, executes the callback, else, sets an interupt flag
+ * if callback present, executes the callback, else, sets an interrupt flag
+ * 
+ * NOTE: handle event queue here
+ * if you call handleTouch() in this method, you would be executing unsafe IRQ code (i2c comms), so
+ * you must use a thread/event queue to execute the code later.
+ * Adding handleTouch to the queue could possibly be done using an additional callback function, 
+ * as to build a more reusable MPR121 class
 */
 void MPR121::irq_handler(void) {
-    // handle event queue here
-    // if you call handleTouch() in this method, you would be executing unsafe IRQ code (i2c comms), so
-    // you must use a thread/event queue to execute the code later.
-    // Adding handleTouch to the queue could possibly be done using an additional callback function, as to build a more reusable MPR121 class
-    if (interuptCallback) {
-        interuptCallback();
+    if (interruptCallback) {
+        interruptCallback();
     } else {
-        interupt = true;
+        interrupt = true;
     }
     return;
 }
 
-bool MPR121::interuptDetected() {
-    return interupt;
+bool MPR121::interruptDetected() {
+    return interrupt;
 }
 
-void MPR121::clearInterupt() {
-    interupt = false;
+void MPR121::clearInterrupt() {
+    interrupt = false;
     return;
 }
 
+int MPR121::readInterruptPin() {
+    return irq.read();
+}
+
 /**
- * @brief Attach a callback to be invoked when an interupt is detected. MUST be ISR safe
+ * @brief Attach a callback to be invoked when an interrupt is detected. MUST be ISR safe
  * @param func MBED Callback function
 */
-void MPR121::attachInteruptCallback(Callback<void()> func) {
-    interuptCallback = func;
+void MPR121::attachInterruptCallback(Callback<void()> func) {
+    interruptCallback = func;
 }
 
 /**

@@ -2,29 +2,57 @@
 #ifndef _SX1509_H_
 #define _SX1509_H_
 
-#include <mbed.h>
 #include "BitwiseMethods.h"
+#include <stdint.h>
+#include "I2C.h"
 
 #define SX1509_ADDR  0x3E
-// 01 | 0x3F | (0111111)
-// 10 | 0x70 | (1110000)
-// 11 | 0x71 | (1110001)
 
 class SX1509 {
 public:
-  enum PinMode
+  enum class PinMode : uint8_t
   {
     OUTPUT = 0x0,
     INPUT = 0x1,
     ANALOG_OUTPUT = 0x2
   };
 
-  enum Bank {
+  enum class Bank : uint8_t
+  {
     BANK_A = 1,
     BANK_B = 0
   };
 
-  enum ClockSpeed
+  enum class DriverMode : uint8_t
+  {
+    LINEAR = 0b00000000,
+    LOGARITHMIC = 0b10001000 // sets both banks LED Driver Mode
+  };
+
+  // Oscillator frequency (fOSC) source
+  enum class ClockSource : uint8_t
+  {
+    OFF = 0b00000000,
+    EXTERNAL = 0b00100000,
+    INTERNAL = 0b01000000
+  };
+
+  // OSCIO pin function
+  enum class OSCIO : uint8_t
+  {
+    OUTPUT = 0b00010000,
+    INPUT = 0b00000000
+  };
+
+  // Frequency of the signal output on OSCOUT pin:
+  enum class fOSCOUT : uint8_t
+  {
+    PERMANENT_LOW = 0,
+    PERMANENT_HIGH = 1,
+    DIVISION_OF_REG_CLOCK = 2
+  };
+
+  enum class ClockSpeed : uint8_t
   {
     ULTRA_FAST = 0b00010000,
     EXTRA_FAST = 0b00100000,
@@ -35,7 +63,7 @@ public:
     ULTRA_SLOW = 0b01110000,
   };
 
-  enum InteruptDirection
+  enum class InteruptDirection : uint8_t
   {
     NONE = 0,
     RISING = 1,
@@ -57,13 +85,18 @@ public:
 	 */
   void init(bool extClock=false);
   void reset();
+  bool isConnected();
 	void digitalWrite(int pin, int value);
 	int digitalRead(int pin);
+  int digitalToggle(int pin);
   void analogWrite(int pin, uint8_t value);
   uint8_t readBankA();
   uint8_t readBankB();
   void writeBankA(uint8_t data);
   void writeBankB(uint8_t data);
+
+  void setClockConfig(ClockSource clockSource, OSCIO oscPin, fOSCOUT oscState);
+  void setMiscConfig(DriverMode driverMode, ClockSpeed clockSpeed);
 
   void ledConfig(int pin);
   void setDirection(int pin, int inOut);
@@ -92,9 +125,11 @@ public:
   int getPinPos(int pin) { return (pin < 8) ? pin : pin - 8; }; // pin bit position
 
 private:
+  uint8_t _clockConfig = 0x00;
+  uint8_t _miscConfig = 0x00;
 
-	inline void i2cWrite(char _command, char _data1, char _data2){
-		char commands[3];
+  inline void i2cWrite(char _command, char _data1, char _data2){
+		uint8_t commands[3];
 		commands[0] = _command;
 		commands[1] = _data1;
 		commands[2] = _data2;
@@ -103,27 +138,21 @@ private:
 	}
 	
 	inline void i2cWrite(char _command, char _data1){
-		char commands[2];
-		commands[0] = _command;
+    uint8_t commands[2];
+    commands[0] = _command;
 		commands[1] = _data1;
 		
 		i2c->write(address, commands, 2);
 	}
 	
 	inline char i2cRead(char _command){
-		char commands[2];
-		commands[0] = _command;
+    uint8_t commands[2];
+    commands[0] = _command;
 		i2c->write(address, commands, 1);
 		//return (char)i2c->read(0);
 		i2c->read(address,commands,1);
 		return commands[0];
 	}
-
-  enum DriverMode
-  {
-    LINEAR = 0b00000000,
-    LOGARITHMIC = 0b10000000
-  };
 
   // registors
   enum SX1509_REG

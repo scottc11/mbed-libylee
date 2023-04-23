@@ -72,7 +72,7 @@ public:
     {
         CoordinateXY coor = calculateMatrixCoordinate(x, y);
 
-        frameData[coor.y] = bitWrite(frameData[coor.y], coor.x, state);
+        frameData[coor.y] = bitwise_write_bit(frameData[coor.y], coor.x, state);
         writeRegister(coor.y, frameData[coor.y]);
     }
 
@@ -97,7 +97,7 @@ public:
 
     void togglePixel(uint8_t x, uint8_t y) {
         CoordinateXY cord = calculateMatrixCoordinate(x, y);
-        frameData[cord.y] = bitFlip(frameData[cord.y], cord.x);
+        frameData[cord.y] = bitwise_flip_bit(frameData[cord.y], cord.x);
         writeRegister(cord.y, frameData[cord.y]);
     }
 
