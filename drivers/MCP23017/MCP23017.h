@@ -21,6 +21,9 @@ mcp.digitalReadAB(); // clear any stray interupts after configuration
 #include "I2C.h"
 
 #define MCP23017_DEFAULT_ADDR 0x20
+#define MCP23017_I2C_ADDR_010 0x22 // 0b0100010
+#define MCP23017_I2C_ADDR_100 0x24 // 0b0100100
+#define MCP23017_CTRL_ADDR 0x24	   // 0b0100100
 #define MCP23017_PORTA 0x00
 #define MCP23017_PORTB 0x01
 
