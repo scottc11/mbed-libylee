@@ -43,6 +43,8 @@ class MCP23017 {
 
 	I2C * i2c;
 	char address;
+	uint16_t currPinStates;
+	uint16_t prevPinStates;
 
 	/** Software Reset
 	 */

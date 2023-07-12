@@ -132,7 +132,9 @@ char MCP23017::digitalRead(char _port) {
 uint16_t MCP23017::digitalReadAB() {
 	int portA = this->digitalRead(MCP23017_PORTA);
 	int portB = this->digitalRead(MCP23017_PORTB);
-	return (portB << 8) | portA;
+	prevPinStates = currPinStates;
+	currPinStates = (portB << 8) | portA;
+	return currPinStates;
 }
 
 int MCP23017::getBitStatus(int byte, int bit) {
