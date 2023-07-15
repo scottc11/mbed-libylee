@@ -88,7 +88,7 @@ public:
   bool isConnected();
 	void digitalWrite(int pin, int value);
 	int digitalRead(int pin);
-  int digitalToggle(int pin);
+  void digitalToggle(int pin);
   void analogWrite(int pin, uint8_t value);
   uint8_t readBankA();
   uint8_t readBankB();

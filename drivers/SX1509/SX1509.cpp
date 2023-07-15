@@ -306,7 +306,7 @@ int SX1509::digitalRead(int pin)
   return bitwise_read_bit(data, pinPos);
 }
 
-int SX1509::digitalToggle(int pin) {
+void SX1509::digitalToggle(int pin) {
   int bank = getBank(pin);
   int pinPos = getPinPos(pin);
   int reg = REG_DATA_B + bank;
